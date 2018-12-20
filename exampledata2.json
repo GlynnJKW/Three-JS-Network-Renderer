@@ -1,0 +1,72 @@
+{
+    "nodes": [
+        {
+            "name": "n0",
+            "type": "input",
+            "info": {
+                "question": "n3",
+                "answer": "n4",
+                "heatmap": "n2",
+                "texture": "/textures/inputNodeTexture.jpg"
+            },
+            "shape": "cube",
+            "position": {
+                "x": 0,
+                "y": 2,
+                "z": 0
+            }
+        },
+        {
+            "name": "n2",
+            "shape": "plane",
+            "position": {
+                "x": 2,
+                "y": -1,
+                "z": 0
+            },
+            "scale": {
+                "x": 3,
+                "y": 3,
+                "z": 3
+            }
+        },
+        {
+            "name": "n3",
+            "type": "text",
+            "info": {
+                "text": "question"
+            },
+            "position": {
+                "x": -2,
+                "y": -1,
+                "z": 0
+            }
+        },
+        {
+            "name": "n4",
+            "type": "text",
+            "info": {
+                "text": "answer"
+            },
+            "position": {
+                "x": -2,
+                "y": -2,
+                "z": 0
+            }
+        }
+    ],
+    "edges": [
+        {
+            "src": "n0",
+            "tgt": "n2"
+        },
+        {
+            "src": "n0",
+            "tgt": "n3"
+        },
+        {
+            "src": "n3",
+            "tgt": "n4"
+        }
+    ]
+}

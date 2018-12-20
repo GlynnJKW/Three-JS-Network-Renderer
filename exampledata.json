@@ -1,0 +1,46 @@
+{
+    "nodes": [
+        {
+            "name": "n1",
+            "shape": "cube"
+        },
+        {
+            "name": "n2",
+            "shape": "cube"
+        },
+        {
+            "name": "n3",
+            "shape": "dod"
+        },
+        {
+            "name": "n4",
+            "shape": "ico"
+        }
+    ],
+    "edges": [
+        {
+            "src": "n1",
+            "tgt": "n2"
+        },
+        {
+            "src": "n2",
+            "tgt": "n3"
+        },
+        {
+            "src": "n3",
+            "tgt": "n1"
+        },
+        {
+            "src": "n1",
+            "tgt": "n4"
+        },
+        {
+            "src": "n2",
+            "tgt": "n4"
+        },
+        {
+            "src": "n3",
+            "tgt": "n4"
+        }
+    ]
+}
