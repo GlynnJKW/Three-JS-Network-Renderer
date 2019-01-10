@@ -77,7 +77,7 @@ function addmore(num){
     graph.AddFidget();
     // graph.updateEdgeGeom();
     graph.setNodeGeom();
-    graph.updateNodeGeom();
+    // graph.updateNodeGeom();
 }
 
 
