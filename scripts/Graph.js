@@ -1,17 +1,14 @@
-class Graph extends THREE.Object3D {
+import * as THREE from 'three';
+import { EasingFunctions, LerpColor, sleep } from './Util';
+import GraphEdge from './GraphEdge';
+
+export default class Graph extends THREE.Object3D {
     constructor(){
         super();
-        this.movableNodes = [];
         this.nodes = [];
-        // this.nodePositions = [];
         this.edges = [];
         this.lookup = [];
-        this.repulsion = 1.0;
-        this.damping = 0.9;
-        this.springconstant = 10.0;
         this.directed = false;
-        this.maxVelocity = 1;
-        // this.numNeighbors = 100;
     }
 
     AddFidget(){

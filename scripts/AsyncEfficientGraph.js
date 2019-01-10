@@ -1,5 +1,7 @@
+import EfficientGraph from './EfficientGraph';
+import { sleep } from './Util';
 
-class AsyncEfficientGraph extends EfficientGraph {
+export default class AsyncEfficientGraph extends EfficientGraph {
 
     constructor(){
         super();

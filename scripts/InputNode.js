@@ -1,7 +1,10 @@
+import * as THREE from 'three';
+import GraphNode from './GraphNode';
+
 let INPUTNODE_loadTexture = new THREE.TextureLoader().load('/textures/lg.comet-spinner.gif');
 let INPUTNODE_loadTextureMat = new THREE.MeshBasicMaterial({map: INPUTNODE_loadTexture});
 
-class InputNode extends GraphNode {
+export default class InputNode extends GraphNode {
     constructor(name, shape = "ico", info = {}) {
         super(name, shape, info);
         this.msgData = { Image: "/imageDATA/VG_100K/2.jpg", Question: "what color is the car" };

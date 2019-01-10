@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 const icoGeometry = new THREE.IcosahedronGeometry(0.5, 0);
 const dodGeometry = new THREE.DodecahedronGeometry(0.5, 0);
 const cubeGeometry = new THREE.CubeGeometry(0.5, 0.5, 0.5);
@@ -26,21 +28,9 @@ sphereGeometry.uvsNeedUpdate = true;
 sphereGeometry.elementsNeedUpdate = true;
 sphereGeometry.verticesNeedUpdate = true;
 
-const sphereMaterial = new THREE.ShaderMaterial(
-    {
-        "vertexShader": document.getElementById('sphereVert').textContent,
-        "fragmentShader": document.getElementById('sphereFrag').textContent,
-        "side": THREE.DoubleSide,
-        "vertexColors": THREE.VertexColors,
-        "uniforms": {
-            "screen": {value: new THREE.Vector2(1920, 1080)},
-            "radius": {value: 100}
-        }
-    });
-
 const textureMap = [];
 
-class GraphNode extends THREE.Object3D {
+export default class GraphNode extends THREE.Object3D {
     constructor(name, shape="ico", info={}){
         super();
         this.edges = [];

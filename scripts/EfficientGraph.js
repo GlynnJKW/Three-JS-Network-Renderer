@@ -1,17 +1,9 @@
-const lineMaterial = new THREE.ShaderMaterial(
-    {
-        "vertexShader": document.getElementById('lineVert').textContent,
-        "fragmentShader": document.getElementById('lineFrag').textContent,
-        "side": THREE.DoubleSide,
-        "transparent": true,
-        "uniforms": {
-            "screen": {value: new THREE.Vector2(1920, 1080)},
-            "color0": {value: new THREE.Vector3(1, 0.65, 0)},
-            "color1": {value: new THREE.Vector3(0,0,1)}
-        }
-    });
+import * as THREE from 'three';
+import Graph from './Graph';
+import { sphereMaterial, lineMaterial } from './Materials';
 
-class EfficientGraph extends Graph {
+
+export default class EfficientGraph extends Graph {
     addNode(node){
         if(this.lookup[node.name]){
             return;

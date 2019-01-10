@@ -2,7 +2,7 @@
  * Easing Functions - inspired from http://gizma.com/easing/
  * only considering the t value for the range [0, 1] => [0, 1]
  */
-EasingFunctions = {
+const EasingFunctions = {
     // no easing, no acceleration
     linear: function (t) { return t },
     // accelerating from zero velocity
@@ -29,17 +29,19 @@ EasingFunctions = {
     easeOutQuint: function (t) { return 1+(--t)*t*t*t*t },
     // acceleration until halfway, then deceleration 
     easeInOutQuint: function (t) { return t<.5 ? 16*t*t*t*t*t : 1+16*(--t)*t*t*t*t }
-  }
+}
 
-  function LerpColor(a, b, t){
-    let nc = {};
-    nc.r = a.r * (1 - t) + b.r * t;
-    nc.g = a.g * (1 - t) + b.g * t;
-    nc.b = a.b * (1 - t) + b.b * t;
-    return nc;    
-  }
+function LerpColor(a, b, t){
+  let nc = {};
+  nc.r = a.r * (1 - t) + b.r * t;
+  nc.g = a.g * (1 - t) + b.g * t;
+  nc.b = a.b * (1 - t) + b.b * t;
+  return nc;    
+}
 
   
-  function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+export { EasingFunctions, LerpColor, sleep }

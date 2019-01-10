@@ -1,16 +1,21 @@
+import * as THREE from 'three';
+import PickableGraph from './PickableGraph';
+import Vec3 from './Vec3';
+import OrbitControls from './OrbitControls';
+import { sphereMaterial, lineMaterial, pickingSphereMaterial } from './Materials';
+
 const scene = new THREE.Scene();
 const renderer = new THREE.WebGLRenderer({
     antialias: true
 });
 scene.background = new THREE.Color(0,0,0);
-var raycaster = new THREE.Raycaster();
-raycaster.linePrecision = 0.1;
-var mouse = new THREE.Vector2();
+
 let camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+window.globalCamera = camera;
+
 renderer.setSize(window.innerWidth, window.innerHeight);
 sphereMaterial.uniforms.screen.value.set(window.innerWidth, window.innerHeight);
 lineMaterial.uniforms.screen.value.set(window.innerWidth, window.innerHeight);
-window.globalCamera = camera;
 document.body.appendChild(renderer.domElement);
 
 
@@ -98,7 +103,7 @@ async function changeIntensity(){
 // camera.position.z = 50;
 camera.position.set(0,0,50);
 
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
+const controls = new OrbitControls(camera, renderer.domElement);
 controls.screenSpacePanning = true;
 
 async function animate(){

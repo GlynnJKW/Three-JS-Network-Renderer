@@ -1,4 +1,7 @@
-class TextNode extends GraphNode{
+import * as THREE from 'three';
+import GraphNode from './GraphNode';
+
+export default class TextNode extends GraphNode{
     constructor(name, info={}){
         super(name, "none", info);
         let text = info.text ? info.text : "x";

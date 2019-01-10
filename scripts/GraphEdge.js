@@ -1,4 +1,4 @@
-class GraphEdge {
+export default class GraphEdge {
     constructor(src, tgt){
         this.source = src;
         this.target = tgt;

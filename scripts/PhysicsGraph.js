@@ -1,17 +1,15 @@
-class PhysicsGraph extends Graph {
+import Graph from './Graph';
+import Vec3 from './Vec3';
+import { sleep } from './Util';
+
+export default class PhysicsGraph extends Graph {
     constructor(){
         super();
         this.movableNodes = [];
-        this.nodes = [];
-        // this.nodePositions = [];
-        this.edges = [];
-        this.lookup = [];
         this.repulsion = 1.0;
         this.damping = 0.9;
         this.springconstant = 10.0;
-        this.directed = false;
         this.maxVelocity = 1;
-        // this.numNeighbors = 100;
     }
 
     AddFidget(){

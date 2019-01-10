@@ -1,16 +1,9 @@
-const pickingSphereMaterial = new THREE.ShaderMaterial(
-    {
-        "vertexShader": document.getElementById('pickingSphereVert').textContent,
-        "fragmentShader": document.getElementById('pickingSphereFrag').textContent,
-        "side": THREE.DoubleSide,
-        "vertexColors": THREE.VertexColors,
-        "uniforms": {
-            "screen": {value: new THREE.Vector2(1920, 1080)},
-            "radius": {value: 100}
-        }
-    });
+import * as THREE from 'three';
+import LayeredGraph from './LayeredGraph';
+import { sphereMaterial, pickingSphereMaterial } from './Materials';
 
-class PickableGraph extends LayeredGraph{
+
+export default class PickableGraph extends LayeredGraph{
     prepareForPicking(){
         if(this.edgeObject && this.edgeObject.mesh){
             this.remove(this.edgeObject.mesh);

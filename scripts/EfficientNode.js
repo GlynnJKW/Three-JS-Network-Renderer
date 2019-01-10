@@ -1,4 +1,6 @@
-class EfficientNode {
+import Vec3 from './Vec3';
+
+export default class EfficientNode {
     constructor(options={}){
         this.name = options.name ? options.name : Date.now().toFixed();
         this.position = options.position ? options.position : new Vec3(0,0,0);

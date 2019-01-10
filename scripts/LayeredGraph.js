@@ -1,4 +1,8 @@
-class LayeredGraph extends EfficientGraph{
+import EfficientGraph from './EfficientGraph';
+import EfficientNode from './EfficientNode';
+import Vec3 from './Vec3';
+
+export default class LayeredGraph extends EfficientGraph{
 
     constructor(numLayers, nodesPerLayer){
         super(...arguments);
