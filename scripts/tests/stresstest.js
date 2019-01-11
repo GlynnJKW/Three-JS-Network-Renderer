@@ -1,9 +1,9 @@
 import * as THREE from 'three';
-import AsyncEfficientGraph from '../AsyncEfficientGraph';
+import EfficientGraph from '../EfficientGraph';
 import Vec3 from '../Vec3';
 import OrbitControls from '../OrbitControls';
 import EfficientNode from '../EfficientNode';
-import { sphereMaterial, lineMaterial, pickingSphereMaterial } from '../Materials';
+import { sphereMaterial } from '../Materials';
 
 
 const scene = new THREE.Scene();
@@ -19,7 +19,7 @@ document.body.appendChild(renderer.domElement);
 
 
 let len = 1000;
-let graph = new AsyncEfficientGraph();
+let graph = new EfficientGraph();
 
 
 

@@ -1,4 +1,3 @@
-import AsyncEfficientGraph from './AsyncEfficientGraph';
 import EfficientGraph from './EfficientGraph';
 import EfficientNode from './EfficientNode';
 import Graph from './Graph';
@@ -17,7 +16,6 @@ export {
     Graph,
     EfficientGraph,
     EfficientNode,
-    AsyncEfficientGraph,
     GraphEdge,
     GraphNode,
     InputNode,

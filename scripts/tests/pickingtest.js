@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import PickableGraph from '../PickableGraph';
 import Vec3 from '../Vec3';
 import OrbitControls from '../OrbitControls';
-import { sphereMaterial, lineMaterial, pickingSphereMaterial } from '../Materials';
+import { sphereMaterial, lineMaterial } from '../Materials';
 
 const scene = new THREE.Scene();
 const renderer = new THREE.WebGLRenderer({
