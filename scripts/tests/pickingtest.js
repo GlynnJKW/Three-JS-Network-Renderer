@@ -1,8 +1,8 @@
 import * as THREE from 'three';
-import PickableGraph from './PickableGraph';
-import Vec3 from './Vec3';
-import OrbitControls from './OrbitControls';
-import { sphereMaterial, lineMaterial, pickingSphereMaterial } from './Materials';
+import PickableGraph from '../PickableGraph';
+import Vec3 from '../Vec3';
+import OrbitControls from '../OrbitControls';
+import { sphereMaterial, lineMaterial, pickingSphereMaterial } from '../Materials';
 
 const scene = new THREE.Scene();
 const renderer = new THREE.WebGLRenderer({
@@ -68,6 +68,7 @@ graph.setNodeGeom();
 
 
 scene.add(graph);
+window.graph = graph;
 
 
 async function spreadIntensity(pause = 0.001){

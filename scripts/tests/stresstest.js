@@ -1,8 +1,13 @@
+import * as THREE from 'three';
+import AsyncEfficientGraph from '../AsyncEfficientGraph';
+import Vec3 from '../Vec3';
+import OrbitControls from '../OrbitControls';
+import EfficientNode from '../EfficientNode';
+import { sphereMaterial, lineMaterial, pickingSphereMaterial } from '../Materials';
+
+
 const scene = new THREE.Scene();
 const renderer = new THREE.WebGLRenderer();
-var raycaster = new THREE.Raycaster();
-raycaster.linePrecision = 0.1;
-var mouse = new THREE.Vector2();
 let camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 renderer.setSize(window.innerWidth, window.innerHeight);
 sphereMaterial.uniforms.screen.value.set(window.innerWidth, window.innerHeight);
@@ -10,15 +15,11 @@ window.globalCamera = camera;
 document.body.appendChild(renderer.domElement);
 
 
-// let asdf = new GraphNode("n1", "cube", {});
-// asdf.locked = true;
-// graph.addNode(asdf);
-// asdf.position.set(0,1,0);
 
 
-let len = 100;
+
+let len = 1000;
 let graph = new AsyncEfficientGraph();
-//graph.scale.set(0.1, 0.1, 0.1);
 
 
 
@@ -42,7 +43,6 @@ for(let e = 0; e < graph.edges.length; ++e){
 
 for(let n = 0; n < graph.nodes.length; ++n){
     let intensity = Math.random();
-    // let str = Math.abs(intensity - 0.5) * 2;
     let col = new Vec3(1, 0.65, 0).multiplyScalar(1 - intensity).add(new Vec3(0, 0, 1).multiplyScalar(intensity));
     graph.nodes[n].color = col;
 }
@@ -54,11 +54,11 @@ scene.add(graph);
 
 camera.position.z = 50;
 
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
+const controls = new OrbitControls(camera, renderer.domElement);
 controls.screenSpacePanning = true;
 
 
-function addmore(num){
+window.addmore = function(num){
     for(let i = 0; i < num; ++i){
         const n = len + i;
 
@@ -67,7 +67,6 @@ function addmore(num){
 
         let intensity = Math.random();
         let col = new Vec3(1, 0.65, 0).multiplyScalar(1 - intensity).add(new Vec3(0, 0, 1).multiplyScalar(intensity));
-        // console.log(graph.nodes.length, n, graph.nodes[n]);
         graph.nodes[n].color = col;  
 
         graph.addEdge(`n${i-1}`, `n${i}`);
@@ -78,8 +77,10 @@ function addmore(num){
     // graph.updateEdgeGeom();
     graph.setNodeGeom();
     // graph.updateNodeGeom();
+    return len;
 }
 
+window.graph = graph;
 
 function animate(){
     requestAnimationFrame(animate);
