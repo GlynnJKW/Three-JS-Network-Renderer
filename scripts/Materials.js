@@ -1,38 +1,41 @@
-const sphereMaterial = new THREE.ShaderMaterial(
+import { Sphere, Line, PickingSphere } from './shaders';
+import { ShaderMaterial, Vector2, Vector3, DoubleSide, VertexColors } from 'three';
+
+const sphereMaterial = new ShaderMaterial(
     {
-        "vertexShader": document.getElementById('sphereVert').textContent,
-        "fragmentShader": document.getElementById('sphereFrag').textContent,
-        "side": THREE.DoubleSide,
-        "vertexColors": THREE.VertexColors,
+        "vertexShader": Sphere.vertex,
+        "fragmentShader": Sphere.fragment,
+        "side": DoubleSide,
+        "vertexColors": VertexColors,
         "uniforms": {
-            "screen": {value: new THREE.Vector2(1920, 1080)},
+            "screen": {value: new Vector2(1920, 1080)},
             "radius": {value: 100}
         }
     }
 );
 
-const lineMaterial = new THREE.ShaderMaterial(
+const lineMaterial = new ShaderMaterial(
     {
-        "vertexShader": document.getElementById('lineVert').textContent,
-        "fragmentShader": document.getElementById('lineFrag').textContent,
-        "side": THREE.DoubleSide,
+        "vertexShader": Line.vertex,
+        "fragmentShader": Line.fragment,
+        "side": DoubleSide,
         "transparent": true,
         "uniforms": {
-            "screen": {value: new THREE.Vector2(1920, 1080)},
-            "color0": {value: new THREE.Vector3(1, 0.65, 0)},
-            "color1": {value: new THREE.Vector3(0,0,1)}
+            "screen": {value: new Vector2(1920, 1080)},
+            "color0": {value: new Vector3(1, 0.65, 0)},
+            "color1": {value: new Vector3(0,0,1)}
         }
     }
 );
 
-const pickingSphereMaterial = new THREE.ShaderMaterial(
+const pickingSphereMaterial = new ShaderMaterial(
     {
-        "vertexShader": document.getElementById('pickingSphereVert').textContent,
-        "fragmentShader": document.getElementById('pickingSphereFrag').textContent,
-        "side": THREE.DoubleSide,
-        "vertexColors": THREE.VertexColors,
+        "vertexShader": PickingSphere.vertex,
+        "fragmentShader": PickingSphere.fragment,
+        "side": DoubleSide,
+        "vertexColors": VertexColors,
         "uniforms": {
-            "screen": {value: new THREE.Vector2(1920, 1080)},
+            "screen": {value: new Vector2(1920, 1080)},
             "radius": {value: 100}
         }
     }
