@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import PickableGraph from '../PickableGraph';
+import LayeredGraph from '../LayeredGraph';
 import Vec3 from '../Vec3';
 import OrbitControls from '../OrbitControls';
 import { sphereMaterial, lineMaterial } from '../Materials';
@@ -34,7 +34,7 @@ const layers = 800;
 const width = 1;
 const height = 1;
 
-var graph = new PickableGraph(layers, nodes);
+var graph = new LayeredGraph(layers, nodes);
 graph.directed = true;
 graph.position.set(-(layers-1)*width/2, -(nodes-1)*height/2, 0);
 graph.scale.set(width, height, 1);

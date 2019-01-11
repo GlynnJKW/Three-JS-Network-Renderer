@@ -1,9 +1,9 @@
 import * as THREE from 'three';
-import LayeredGraph from './LayeredGraph';
+import EfficientGraph from './EfficientGraph';
 import { sphereMaterial, pickingSphereMaterial } from './Materials';
 
 
-export default class PickableGraph extends LayeredGraph{
+export default class PickableGraph extends EfficientGraph{
     prepareForPicking(){
         if(this.edgeObject && this.edgeObject.mesh){
             this.remove(this.edgeObject.mesh);

@@ -1,8 +1,8 @@
-import EfficientGraph from './EfficientGraph';
+import PickableGraph from './PickableGraph';
 import EfficientNode from './EfficientNode';
 import Vec3 from './Vec3';
 
-export default class LayeredGraph extends EfficientGraph{
+export default class LayeredGraph extends PickableGraph{
 
     constructor(numLayers, nodesPerLayer){
         super(...arguments);
