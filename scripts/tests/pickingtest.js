@@ -1,6 +1,5 @@
 import * as THREE from 'three';
-import LayeredGraph from '../LayeredGraph';
-import Vec3 from '../Vec3';
+import { LayeredGraph, Vec3 } from '../';
 import OrbitControls from '../OrbitControls';
 import { sphereMaterial, lineMaterial } from '../Materials';
 

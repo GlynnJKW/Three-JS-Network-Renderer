@@ -11,6 +11,7 @@
     "webpack-cli": "^3.2.1"
   },
   "scripts": {
+    "build": "webpack --config webpack.config.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

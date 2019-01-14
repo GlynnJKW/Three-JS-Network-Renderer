@@ -1,8 +1,6 @@
 import * as THREE from 'three';
-import EfficientGraph from '../EfficientGraph';
-import Vec3 from '../Vec3';
+import { EfficientGraph, Vec3, EfficientNode } from '../';
 import OrbitControls from '../OrbitControls';
-import EfficientNode from '../EfficientNode';
 import { sphereMaterial } from '../Materials';
 
 

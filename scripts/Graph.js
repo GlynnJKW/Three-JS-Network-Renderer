@@ -221,6 +221,29 @@ export default class Graph extends THREE.Object3D {
         }
     }
 
+    getConnected(source, maxRecursion = 100000){
+        let nodes = [source];
+        let edges = [];
+        if(source.edges.length > 0){
+            for(let edge of source.edges){
+                edges.push(edge);
+                this.connectionStep(edge.target, )
+            }
+        }
+        else{
+            return {nodes: [source], edges: []};
+        }
+
+    }
+
+    connectionStep(source, maxRecursion){
+        if(source.edges.length > 0){
+            for(let edge of source.edges){
+                this.connectionStep(edge.target);
+            }
+        }
+    }
+
 
 
     //Call circlelayout on nonvisited nodes, update edge geometry

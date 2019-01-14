@@ -6,6 +6,7 @@ export default class LayeredGraph extends PickableGraph{
 
     constructor(numLayers, nodesPerLayer){
         super(...arguments);
+        this.directed = true;
         this.layout = [];
         this.nodesPerLayer = nodesPerLayer;
         this.numLayers = numLayers;
