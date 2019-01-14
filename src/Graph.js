@@ -224,7 +224,7 @@ export default class Graph extends THREE.Object3D {
     //Returns a list of all nodes/edges connected to source node within distance
     getConnected(source, maxDistance = 100000){
         let visited = [];
-        let edges = [];
+        let visitedEdges = [];
         let queue = [{node: source, distance: 0}];
         
         while(queue.length != 0){
@@ -238,14 +238,41 @@ export default class Graph extends THREE.Object3D {
 
             if(currNode.edges.length > 0 && currDistance < maxDistance){
                 for(let edge of currNode.edges){
-                    edges.push(edge);
+                    visitedEdges.push(edge);
                     queue.push({node: edge.getNode(currNode), distance: currDistance + 1});
                 }
             }
         }
-        return {"nodes": visited, "edges": edges};
+        return {"nodes": visited, "edges": visitedEdges};
     }
 
+    getConnectedReverse(source, maxDistance = 100000){
+        let visited = [];
+        let visitedEdges = [];
+        let queue = [{node: source, distance: 0}];
+        
+        while(queue.length != 0){
+            let currInfo = queue.shift();
+            let currNode = currInfo.node;
+            let currDistance = currInfo.distance;
+            if(visited.find(e => e == currNode)){
+                continue;
+            }
+            visited.push(currNode);
+
+            let sources = this.edges.filter(e => e.target == currNode);
+            // console.log(sources);
+
+            if(sources.length > 0 && currDistance < maxDistance){
+                for(let edge of sources){
+                    // console.log(edge);
+                    visitedEdges.push(edge);
+                    queue.push({node: edge.source, distance: currDistance + 1});
+                }
+            }
+        }
+        return {"nodes": visited, "edges": visitedEdges};
+    }
 
 
     //Call circlelayout on nonvisited nodes, update edge geometry

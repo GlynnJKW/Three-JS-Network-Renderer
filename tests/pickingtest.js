@@ -18,11 +18,19 @@ document.body.appendChild(renderer.domElement);
 
 
 
+let currentlySelected = null;
+const GUI = new dat.GUI();
+GUI.width = window.innerWidth / 4;
+let GUIOptions = [];
 
-const nodes = 20;
-const layers = 60;
+const nodes = 5;
+const layers = 10;
 const width = 1;
 const height = 1;
+
+
+
+
 
 let graph = new Network.LayeredGraph(layers, nodes);
 graph.directed = true;
@@ -105,22 +113,83 @@ function pick(event){
     let id = (pixelBuffer[0]<<16)|(pixelBuffer[1]<<8)|(pixelBuffer[2]);
     // console.log(event, pixelBuffer, id);
     if(id){
+        currentlySelected = graph.nodes[id-1];
+        setGUI(currentlySelected);
         console.log(id, pixelBuffer);
-        console.log(graph.nodes[id-1], graph.getConnected(graph.nodes[id-1]));
+        console.log(graph.nodes[id-1], graph.getConnectedReverse(graph.nodes[id-1]));
 
-        let ng = graph.getConnected(graph.nodes[id-1]);
-        graph2.nodes = ng.nodes;
-        graph2.edges = ng.edges;
-        graph2.setEdgeGeom();
-        graph2.setNodeGeom();
+        // let ng = graph.getConnectedReverse(graph.nodes[id-1]);
+        // graph2.nodes = ng.nodes;
+        // graph2.edges = ng.edges;
+        // graph2.setEdgeGeom();
+        // graph2.setNodeGeom();
 
-        renderGraph = graph2;
-        scene.remove(graph);
-        scene.add(graph2);
+        // renderGraph = graph2;
+        // scene.remove(graph);
+        // scene.add(graph2);
     }
     else{
         renderGraph = graph;
         scene.remove(graph2);
         scene.add(graph);
+        setGUI();
     }
+}
+
+function setGUI(node){
+    console.log(node);
+    for(let pop of GUIOptions){
+        GUI.remove(pop);
+    }
+    GUIOptions = [];
+    if(node){
+        GUIOptions.push(GUI.add(node, 'name'));
+        GUIOptions.push(GUI.add(window, 'displayAffectedNodes'));
+        GUIOptions.push(GUI.add(window, 'displayAffectingNodes'));
+        GUIOptions.push(GUI.add(window, 'displayConnectedNodes'));
+        GUIOptions.push(GUI.add(window, 'reset'));
+    }
+}
+
+function displayAffectedNodes(){
+    let ng = graph.getConnected(currentlySelected);
+    graph2.nodes = ng.nodes;
+    graph2.edges = ng.edges;
+    graph2.setEdgeGeom();
+    graph2.setNodeGeom();
+
+    renderGraph = graph2;
+    scene.remove(graph);
+    scene.add(graph2);
+}
+
+function displayAffectingNodes(){
+    let ng = graph.getConnectedReverse(currentlySelected);
+    graph2.nodes = ng.nodes;
+    graph2.edges = ng.edges;
+    graph2.setEdgeGeom();
+    graph2.setNodeGeom();
+
+    renderGraph = graph2;
+    scene.remove(graph);
+    scene.add(graph2);
+}
+
+function displayConnectedNodes(){
+    let ng = graph.getConnected(currentlySelected);
+    let ng2 = graph.getConnectedReverse(currentlySelected);
+    graph2.nodes = ng.nodes.concat(ng2.nodes);
+    graph2.edges = ng.edges.concat(ng2.edges);
+    graph2.setEdgeGeom();
+    graph2.setNodeGeom();
+
+    renderGraph = graph2;
+    scene.remove(graph);
+    scene.add(graph2);
+}
+
+function reset(){
+    renderGraph = graph;
+    scene.remove(graph2);
+    scene.add(graph);
 }
