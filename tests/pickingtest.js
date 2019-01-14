@@ -1,8 +1,3 @@
-import * as THREE from 'three';
-import { LayeredGraph, Vec3 } from '../';
-import OrbitControls from '../OrbitControls';
-import { sphereMaterial, lineMaterial } from '../Materials';
-
 const scene = new THREE.Scene();
 const renderer = new THREE.WebGLRenderer({
     antialias: true
@@ -13,8 +8,8 @@ let camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHe
 window.globalCamera = camera;
 
 renderer.setSize(window.innerWidth, window.innerHeight);
-sphereMaterial.uniforms.screen.value.set(window.innerWidth, window.innerHeight);
-lineMaterial.uniforms.screen.value.set(window.innerWidth, window.innerHeight);
+Network.Materials.sphereMaterial.uniforms.screen.value.set(window.innerWidth, window.innerHeight);
+Network.Materials.lineMaterial.uniforms.screen.value.set(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 
@@ -24,20 +19,21 @@ document.body.appendChild(renderer.domElement);
 
 
 
-
-
-
-
-const nodes = 600;
-const layers = 800;
+const nodes = 20;
+const layers = 60;
 const width = 1;
 const height = 1;
 
-var graph = new LayeredGraph(layers, nodes);
+let graph = new Network.LayeredGraph(layers, nodes);
 graph.directed = true;
 graph.position.set(-(layers-1)*width/2, -(nodes-1)*height/2, 0);
 graph.scale.set(width, height, 1);
 
+let graph2 = new Network.PickableGraph();
+graph2.position.copy(graph.position);
+graph2.scale.copy(graph2.scale);
+
+let renderGraph = graph;
 
 //add nodes
 for(let layer = 0; layer < layers; ++layer){
@@ -57,12 +53,11 @@ for(let e = 0; e < graph.edges.length; ++e){
 
 for(let n = 0; n < graph.nodes.length; ++n){
     let intensity = Math.random();
-    let col = new Vec3(1, 0.65, 0).multiplyScalar(1 - intensity).add(new Vec3(0, 0, 1).multiplyScalar(intensity));
+    let col = new Network.Vec3(1, 0.65, 0).multiplyScalar(1 - intensity).add(new Network.Vec3(0, 0, 1).multiplyScalar(intensity));
     graph.nodes[n].color = col;
 }
 
-// graph.setEdgeGeom();
-
+graph.setEdgeGeom();
 graph.setNodeGeom();
 
 
@@ -70,40 +65,11 @@ scene.add(graph);
 window.graph = graph;
 
 
-async function spreadIntensity(pause = 0.001){
-    for(let i = 0; i < graph.edges.length; ++i){
-        graph.shiftIntensity(i, Math.random());
-        if(pause) await sleep(pause * 1000);
-    }
-}
-
-async function spreadByLayer(pause = 0.1, internalTime = 0.5, internalSteps = 5){
-    for(let i = 0; i < layers-1; ++i){
-        for(let n = 0; n < nodes; ++n){
-            let edges = graph.nodes[i * nodes + n].edges;
-            for(let e of edges){
-                graph.shiftIntensity(e.index, Math.random(), internalTime, internalSteps);
-            }
-        }
-        await sleep(pause * 1000);
-    }
-}
-
-async function changeIntensity(){
-    for(let i = 0; i < graph.edges.length; ++i){
-        graph.updateIntensity(i, Math.random());
-        if(i % 200000 == 0){
-            await sleep(0);
-        }
-    }
-}
-
-
 
 // camera.position.z = 50;
 camera.position.set(0,0,50);
 
-const controls = new OrbitControls(camera, renderer.domElement);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.screenSpacePanning = true;
 
 async function animate(){
@@ -127,11 +93,11 @@ canvas.addEventListener('click', function(e){
 
 function pick(event){
     
-    graph.prepareForPicking();
-    pickingScene.add(graph);
+    renderGraph.prepareForPicking();
+    pickingScene.add(renderGraph);
     renderer.render(pickingScene, camera, pickingTexture);
-    graph.revertToNormal();
-    scene.add(graph);
+    renderGraph.revertToNormal();
+    scene.add(renderGraph);
 
 
     let pixelBuffer = new Uint8Array(4);
@@ -140,5 +106,21 @@ function pick(event){
     // console.log(event, pixelBuffer, id);
     if(id){
         console.log(id, pixelBuffer);
+        console.log(graph.nodes[id-1], graph.getConnected(graph.nodes[id-1]));
+
+        let ng = graph.getConnected(graph.nodes[id-1]);
+        graph2.nodes = ng.nodes;
+        graph2.edges = ng.edges;
+        graph2.setEdgeGeom();
+        graph2.setNodeGeom();
+
+        renderGraph = graph2;
+        scene.remove(graph);
+        scene.add(graph2);
+    }
+    else{
+        renderGraph = graph;
+        scene.remove(graph2);
+        scene.add(graph);
     }
 }

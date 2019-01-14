@@ -3,8 +3,7 @@ const path = require('path');
 module.exports = {
     mode: 'development',
     entry: {
-        pickingtest: './scripts/tests/pickingtest.js',
-        stresstest: './scripts/tests/stresstest.js'
+        network: './src/build/network.js'
     },
     output: {
         filename: '[name].bundle.js',

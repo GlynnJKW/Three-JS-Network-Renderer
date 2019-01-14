@@ -1,14 +1,8 @@
-import * as THREE from 'three';
-import { EfficientGraph, Vec3, EfficientNode } from '../';
-import OrbitControls from '../OrbitControls';
-import { sphereMaterial } from '../Materials';
-
-
 const scene = new THREE.Scene();
 const renderer = new THREE.WebGLRenderer();
 let camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 renderer.setSize(window.innerWidth, window.innerHeight);
-sphereMaterial.uniforms.screen.value.set(window.innerWidth, window.innerHeight);
+Network.Materials.sphereMaterial.uniforms.screen.value.set(window.innerWidth, window.innerHeight);
 window.globalCamera = camera;
 document.body.appendChild(renderer.domElement);
 
@@ -17,13 +11,13 @@ document.body.appendChild(renderer.domElement);
 
 
 let len = 1000;
-let graph = new EfficientGraph();
+let graph = new Network.EfficientGraph();
 
 
 
 graph.addNode({name: `n0`, position: new Vec3(0,0,0), edges: []});
 for(let i = 1; i < len; ++i){
-    let node = new EfficientNode({name: `n${i}`, position: new Vec3(0,0,0)});
+    let node = new Network.EfficientNode({name: `n${i}`, position: new Vec3(0,0,0)});
     graph.addNode(node);
     graph.addEdge(`n${i-1}`, `n${i}`);
 }
@@ -41,7 +35,7 @@ for(let e = 0; e < graph.edges.length; ++e){
 
 for(let n = 0; n < graph.nodes.length; ++n){
     let intensity = Math.random();
-    let col = new Vec3(1, 0.65, 0).multiplyScalar(1 - intensity).add(new Vec3(0, 0, 1).multiplyScalar(intensity));
+    let col = new Network.Vec3(1, 0.65, 0).multiplyScalar(1 - intensity).add(new Network.Vec3(0, 0, 1).multiplyScalar(intensity));
     graph.nodes[n].color = col;
 }
 
@@ -52,7 +46,7 @@ scene.add(graph);
 
 camera.position.z = 50;
 
-const controls = new OrbitControls(camera, renderer.domElement);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.screenSpacePanning = true;
 
 
@@ -60,11 +54,11 @@ window.addmore = function(num){
     for(let i = 0; i < num; ++i){
         const n = len + i;
 
-        let node = new EfficientNode({name: `n${n}`, position: new Vec3(0,0,0)});
+        let node = new Network.EfficientNode({name: `n${n}`, position: new Vec3(0,0,0)});
         graph.addNode(node);
 
         let intensity = Math.random();
-        let col = new Vec3(1, 0.65, 0).multiplyScalar(1 - intensity).add(new Vec3(0, 0, 1).multiplyScalar(intensity));
+        let col = new Network.Vec3(1, 0.65, 0).multiplyScalar(1 - intensity).add(new Network.Vec3(0, 0, 1).multiplyScalar(intensity));
         graph.nodes[n].color = col;  
 
         graph.addEdge(`n${i-1}`, `n${i}`);

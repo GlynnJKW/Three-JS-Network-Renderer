@@ -44,6 +44,7 @@ export default class GraphNode extends THREE.Object3D {
         this.locked = false;
         this.velocity = new Vec3(0,0,0);
         this.forces = new Vec3(0,0,0);
+        this.gnid = 0;
 
         let texture = false;
         if(info.texture){
