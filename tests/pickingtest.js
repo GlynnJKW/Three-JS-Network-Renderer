@@ -22,9 +22,10 @@ let currentlySelected = null;
 const GUI = new dat.GUI();
 GUI.width = window.innerWidth / 4;
 let GUIOptions = [];
+GUIOptions.push(GUI.add(window, 'minimizeCrossing'));
 
-const nodes = 5;
-const layers = 10;
+const nodes = 20;
+const layers = 40;
 const width = 1;
 const height = 1;
 
@@ -147,7 +148,10 @@ function setGUI(node){
         GUIOptions.push(GUI.add(window, 'displayAffectedNodes'));
         GUIOptions.push(GUI.add(window, 'displayAffectingNodes'));
         GUIOptions.push(GUI.add(window, 'displayConnectedNodes'));
-        GUIOptions.push(GUI.add(window, 'reset'));
+        GUIOptions.push(GUI.add(window, 'resetDisplay'));
+    }
+    else{
+        GUIOptions.push(GUI.add(window, 'minimizeCrossing'));
     }
 }
 
@@ -188,8 +192,14 @@ function displayConnectedNodes(){
     scene.add(graph2);
 }
 
-function reset(){
+function resetDisplay(){
     renderGraph = graph;
     scene.remove(graph2);
     scene.add(graph);
+}
+
+function minimizeCrossing(){
+    graph.oscm();
+    graph.updateNodeGeom();
+    graph.updateEdgeGeom();
 }
