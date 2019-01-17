@@ -7,7 +7,7 @@ window.globalCamera = camera;
 document.body.appendChild(renderer.domElement);
 
 
-
+window["Nodes to add"] = 1000;
 
 
 let len = 1000;
@@ -15,9 +15,9 @@ let graph = new Network.EfficientGraph();
 
 
 
-graph.addNode({name: `n0`, position: new Vec3(0,0,0), edges: []});
+graph.addNode({name: `n0`, position: new Network.Vec3(0,0,0), edges: []});
 for(let i = 1; i < len; ++i){
-    let node = new Network.EfficientNode({name: `n${i}`, position: new Vec3(0,0,0)});
+    let node = new Network.EfficientNode({name: `n${i}`, position: new Network.Vec3(0,0,0)});
     graph.addNode(node);
     graph.addEdge(`n${i-1}`, `n${i}`);
 }
@@ -50,11 +50,15 @@ const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.screenSpacePanning = true;
 
 
-window.addmore = function(num){
+window["Add nodes"] = function(){
+    addmore(window["Nodes to add"]);
+}
+
+function addmore(num){
     for(let i = 0; i < num; ++i){
         const n = len + i;
 
-        let node = new Network.EfficientNode({name: `n${n}`, position: new Vec3(0,0,0)});
+        let node = new Network.EfficientNode({name: `n${n}`, position: new Network.Vec3(0,0,0)});
         graph.addNode(node);
 
         let intensity = Math.random();
@@ -73,6 +77,13 @@ window.addmore = function(num){
 }
 
 window.graph = graph;
+
+const GUI = new dat.GUI();
+GUI.width = window.innerWidth / 4;
+let GUIOptions = [];
+GUIOptions.push(GUI.add(window, 'Nodes to add'));
+GUIOptions.push(GUI.add(window, 'Add nodes'));
+
 
 function animate(){
     requestAnimationFrame(animate);

@@ -24,8 +24,8 @@ GUI.width = window.innerWidth / 4;
 let GUIOptions = [];
 GUIOptions.push(GUI.add(window, 'minimizeCrossing'));
 
-const nodes = 20;
-const layers = 40;
+const nodes = 15;
+const layers = 30;
 const width = 1;
 const height = 1;
 
@@ -56,7 +56,7 @@ for(let layer = 0; layer < layers; ++layer){
 
 
 for(let e = 0; e < graph.edges.length; ++e){
-    let intensity = Math.round(Math.random());
+    let intensity = (Math.random());
     graph.edges[e].intensity = intensity;
 }
 

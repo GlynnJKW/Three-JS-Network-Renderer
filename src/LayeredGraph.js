@@ -21,11 +21,11 @@ export default class LayeredGraph extends PickableGraph{
         }
     }
 
-    oscm(num = 1){
+    oscm(num = 100){
         if(num > 1){
             this.oscm(num - 1);
         }
-        this.uncrossReverse();
+        // this.uncrossReverse();
         this.uncross();
     }
 
@@ -35,10 +35,12 @@ export default class LayeredGraph extends PickableGraph{
         
         for(let layer = this.numLayers - 2; layer >= 0; --layer){
             let layerlayout = [];
+            let unconnected = [];
             for(let n = 0; n < this.nodesPerLayer; ++n){
                 let oldnode = this.layout[layer][n];
                 if(!oldnode.edges.length){
-                    layerlayout[layerlayout.length >= this.nodesPerLayer ? layerlayout.length : this.nodesPerLayer] = oldnode;
+                    unconnected.push(oldnode);
+                    // layerlayout[layerlayout.length >= this.nodesPerLayer ? layerlayout.length : this.nodesPerLayer] = oldnode;
                 }
                 else if(oldnode.edges.length == 1){
                     this._findSlot(oldnode, layerlayout, oldnode.edges[0].target.position.y);
@@ -46,6 +48,11 @@ export default class LayeredGraph extends PickableGraph{
                 else{
                     let median = oldnode.edges[Math.round((oldnode.edges.length - 1) / 2)].target.position.y;
                     this._findSlot(oldnode, layerlayout, median);    
+                }
+            }
+            for(let n = 0; n < this.nodesPerLayer; ++n){
+                if(layerlayout[n] == null){
+                    layerlayout[n] = unconnected.shift();
                 }
             }
             newlayout[layer] = layerlayout.filter(n => n != null);
@@ -63,7 +70,8 @@ export default class LayeredGraph extends PickableGraph{
     
         for(let layer = 1; layer < this.numLayers - 1; ++layer){
             let layerlayout = [];
-            let layeredges = []
+            let layeredges = [];
+            let unconnected = [];
             for(let node of this.layout[layer-1]){
                 layeredges = layeredges.concat(node.edges);
             }
@@ -71,7 +79,8 @@ export default class LayeredGraph extends PickableGraph{
                 let oldnode = this.layout[layer][n];
                 let connected = layeredges.filter(e => e.target == oldnode);
                 if(!connected.length){
-                    layerlayout[layerlayout.length >= this.nodesPerLayer ? layerlayout.length : this.nodesPerLayer] = oldnode;
+                    unconnected.push(oldnode);
+                    // layerlayout[layerlayout.length >= this.nodesPerLayer ? layerlayout.length : this.nodesPerLayer] = oldnode;
                 }
                 else if(connected.length == 1){
                     this._findSlot(oldnode, layerlayout, connected[0].source.position.y);
@@ -79,6 +88,11 @@ export default class LayeredGraph extends PickableGraph{
                 else{
                     let median = connected[Math.round((connected.length - 1) / 2)].source.position.y;
                     this._findSlot(oldnode, layerlayout, median);
+                }
+            }
+            for(let n = 0; n < this.nodesPerLayer; ++n){
+                if(layerlayout[n] == null){
+                    layerlayout[n] = unconnected.shift();
                 }
             }
             newlayout[layer] = layerlayout.filter(n => n != null);

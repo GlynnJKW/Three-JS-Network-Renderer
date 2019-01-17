@@ -25,13 +25,13 @@ const vertex =
     }
 
     void main(){
-        float alpha = sqrt(abs(0.5 - intensity) * 2.0);
+        float alpha = (abs(0.5 - intensity) * 2.0);
         vec3 albedo;
         if(intensity > 0.5){
-            albedo = color1 * alpha;
+            albedo = color1;// * alpha;
         }
         else{
-            albedo = color0 * alpha;
+            albedo = color0;// * alpha;
         }
         col = vec4(albedo, alpha);
 
@@ -42,7 +42,7 @@ const vertex =
         vec3 d = normalize(modelMatrix * vec4(direction, 0.0)).xyz;
         vec3 u = normalize(cross(d, viewDir));
 
-        worldPos += u * uv.y * 0.1;
+        worldPos += u * uv.y * 0.1 * alpha;
 
         vec4 fragpos = projectionMatrix * viewMatrix * vec4(worldPos, 1.0);
 
@@ -62,7 +62,7 @@ const fragment =
         if(rad > 0.5){
             discard;
         }
-        gl_FragColor = vec4(col.rgb * pow(1.0 - rad*2.0, 0.5), col.a);
+        gl_FragColor = vec4(col.rgb * pow(1.0 - rad*2.0, 0.5), 1);
     }
     `;
 
