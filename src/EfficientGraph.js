@@ -1,9 +1,55 @@
 import * as THREE from 'three';
 import Graph from './Graph';
 import { sphereMaterial, lineMaterial } from './Materials';
+import { EfficientNode } from '.';
 
+//#region typedefs
+    /**
+     * @typedef {Object} NodeVisInfo
+     * @property {Vec3} color - the color to render the node as
+     */
 
+    /**
+     * @typedef {Object} EdgeVisInfo
+     * @property {Vec3} color - the color to render the edge as
+     * @property {number} intensity - the weight of the edge
+     */
+//#endregion
+
+/**
+ * @extends Graph 
+ */
 export default class EfficientGraph extends Graph {
+
+    static StandardNodeVisFunction(node){
+        return {color: node.color}
+    }
+
+    static StandardEdgeVisFunction(edge){
+        return {color: edge.color, intensity: edge.intensity}
+    }
+
+    /**
+     * Converts node info into visualization info
+     * @param {EfficientNode} node 
+     * @return {NodeVisInfo} the visual info
+     */
+    nodeVisFunction(node){}
+
+    /**
+     * Converts node info into visualization info
+     * @param {GraphEdge} node 
+     * @returns {EdgeVisInfo}
+     */
+    edgeVisFunction(edge){}
+
+    constructor(){
+        super();
+
+        this.nodeVisFunction = EfficientGraph.StandardNodeVisFunction;
+        this.edgeVisFunction = EfficientGraph.StandardEdgeVisFunction;
+    }
+
     addNode(node){
         if(this.lookup[node.name]){
             return;
@@ -28,7 +74,7 @@ export default class EfficientGraph extends Graph {
         
         for(let i = 0; i < this.nodes.length; i += 1){
             let pos = this.nodes[i].position;
-            let col = this.nodes[i].color;
+            let col = this.nodeVisFunction(this.nodes[i]).color;
 
 
             //4 vertices per node
