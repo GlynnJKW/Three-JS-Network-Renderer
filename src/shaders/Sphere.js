@@ -37,7 +37,11 @@ const vertex =
         vec4 fragpos = clipPos + vec4((clipPos.ww * fraguv.xy) * size, 0, 0);
 
         gl_Position = fragpos;
+#ifdef USE_COLOR
         test.rgb = color;
+#else
+        test.rgb = vec3(1,1,1);
+#endif
     }
     `;
 

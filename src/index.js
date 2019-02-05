@@ -11,6 +11,7 @@ import PickableGraph from './PickableGraph';
 import TextNode from './TextNode';
 import * as Util from './Util';
 import Vec3 from './Vec3';
+import * as VisFunctions from './VisFunctions';
 
 export {
     Graph,
@@ -25,5 +26,6 @@ export {
     PickableGraph,
     Util,
     TextNode,
-    Vec3
+    Vec3,
+    VisFunctions
 }
