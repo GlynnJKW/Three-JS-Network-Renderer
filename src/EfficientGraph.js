@@ -50,6 +50,9 @@ export default class EfficientGraph extends Graph {
         this.edgeVisFunction = EfficientGraph.StandardEdgeVisFunction;
     }
 
+    /**
+     * @param {EfficientNode} node the node to add to this graph
+     */
     addNode(node){
         if(this.lookup[node.name]){
             return;
@@ -57,12 +60,13 @@ export default class EfficientGraph extends Graph {
         let gnid = this.nodes.length;
         this.nodes[gnid] = node;
         this.lookup[node.name] = gnid;
-        // this.nodePositions[gnid] = [node.position.x, node.position.y, node.position.z];
         node.gnid = gnid;
-        // this.add(node);
         node.parentGraph = this;
     }
 
+    /**
+     * Creates/resets the geometry for all the nodes inside this graph
+     */
     setNodeGeom(){
         if(this.nodesObject && this.nodesObject.mesh){
             this.remove(this.nodesObject.mesh);
@@ -115,6 +119,9 @@ export default class EfficientGraph extends Graph {
         this.add(this.nodesObject.mesh);
     }
 
+    /**
+     * Updates the geometry with new positions/colors of the nodes inside
+     */
     updateNodeGeom(){
         for(let i = 0; i < this.nodes.length; i += 1){
             let bind = i * 9;
@@ -138,6 +145,9 @@ export default class EfficientGraph extends Graph {
         this.nodesObject.geometry.addAttribute('position', new THREE.Float32BufferAttribute(this.nodesObject.vertices, 3));
     }
 
+    /**
+     * Creates/resets the edge geometry for all edges inside of this graph
+     */
     setEdgeGeom(){
         if(this.edgeObject && this.edgeObject.mesh){
             this.remove(this.edgeObject.mesh);
@@ -225,6 +235,9 @@ export default class EfficientGraph extends Graph {
 
     }
 
+    /**
+     * updates the edge geometry with new positions/directions
+     */
     updateEdgeGeom(){
         //Update vertices array size if necessary
         let vertices;
@@ -285,6 +298,9 @@ export default class EfficientGraph extends Graph {
         this.edgeObject.geometry.attributes.direction.needsUpdate = true;
     }
 
+    /**
+     * updates the intensities of the attribute buffer to be the same as the intensities of the actual edges
+     */
     updateAllIntensities(){
         //Get array object from buffer
         let intensities = this.edgeObject.geometry.attributes.intensity.array;
@@ -300,6 +316,11 @@ export default class EfficientGraph extends Graph {
         this.edgeObject.intensity = intensities;
     }
 
+    /**
+     * Update the intensity of the edge at index 'index' to be intensity 'intensity'
+     * @param {number} index 
+     * @param {number} intensity 
+     */
     updateIntensity(index, intensity){
         //Update appropriate indices in buffer and set dirty tag
         let i = this.edgeObject.geometry.attributes.intensity.array;

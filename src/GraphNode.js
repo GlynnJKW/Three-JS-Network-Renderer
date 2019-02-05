@@ -30,7 +30,17 @@ sphereGeometry.verticesNeedUpdate = true;
 
 const textureMap = [];
 
+/**
+ * @class
+ * @extends THREE.Object3D
+ */
 export default class GraphNode extends THREE.Object3D {
+    /**
+     * 
+     * @param {string} [name]
+     * @param {string} [shape=ico]
+     * @param {*} info 
+     */
     constructor(name, shape="ico", info={}){
         super();
         this.edges = [];

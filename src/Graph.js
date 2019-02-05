@@ -1,7 +1,11 @@
 import * as THREE from 'three';
 import { EasingFunctions, LerpColor, sleep } from './Util';
 import GraphEdge from './GraphEdge';
+import GraphNode from './GraphNode';
 
+/**
+ * @extends THREE.Object3D
+ */
 export default class Graph extends THREE.Object3D {
     constructor(){
         super();
@@ -11,6 +15,9 @@ export default class Graph extends THREE.Object3D {
         this.directed = false;
     }
 
+    /**
+     * randomizes the positions of the nodes to be within a cube of size sqrt(# of nodes / 10) centered at the origin
+     */
     AddFidget(){
         const scale = Math.pow(this.nodes.length/10, 0.5);
         for(let n of this.nodes.filter(n => !n.locked)){
@@ -56,6 +63,12 @@ export default class Graph extends THREE.Object3D {
         return node;
     }
 
+    /**
+     * Adds an edge to the graph
+     * @param {GraphNode} src the node the edge starts at
+     * @param {GraphNode} tgt the node the edge ends at
+     * @param {number} [edgeLength] the length of the edge
+     */
     addEdge(src, tgt, edgeLength){
         let source = typeof src == "string" ? this.nodes[this.lookup[src]] : src;
         let target = typeof tgt == "string" ? this.nodes[this.lookup[tgt]] : tgt;
@@ -81,6 +94,10 @@ export default class Graph extends THREE.Object3D {
         this.edges.push(edge);
     }
 
+    /**
+     * Adds a node to the graph
+     * @param {GraphNode} node the node to add to the graph
+     */
     addNode(node){
         if(this.lookup[node.name]){
             return;
@@ -94,7 +111,11 @@ export default class Graph extends THREE.Object3D {
         node.parentGraph = this;
     }
 
-
+    /**
+     * @param {GraphNode} source 
+     * @param {GraphNode} target 
+     * @returns {GraphNode[]} the nodes (including source/target) that connect the source and target
+     */
     findNodePath(source, target){
         if(source == target){
             return [target];
@@ -113,6 +134,11 @@ export default class Graph extends THREE.Object3D {
         }
     }
 
+    /**
+     * @param {(GraphNode|string)} source 
+     * @param {(GraphNode|string)} target 
+     * @returns {GraphEdge[]} the edges connecting source and target
+     */
     findEdgePath(source, target){
         if(typeof source == "string"){
             source = this.nodes.find(n => n.name == source);
@@ -221,7 +247,12 @@ export default class Graph extends THREE.Object3D {
         }
     }
 
-    //Returns a list of all nodes/edges connected to source node within distance
+    /**
+     * Gets all nodes/edges connected to source within a given distance
+     * @param {GraphNode} source 
+     * @param {number} [maxDistance=100000] the max number of edges between source and returned ndoes
+     * @returns {object} object containing list of nodes and list of edges
+     */
     getConnected(source, maxDistance = 100000){
         let visited = [];
         let visitedEdges = [];
@@ -246,6 +277,12 @@ export default class Graph extends THREE.Object3D {
         return {"nodes": visited, "edges": visitedEdges};
     }
 
+    /**
+     * Gets all nodes/edges connected to source within a given distance (this one is for directed graphs - it reverses the direction of the edges before searching)
+     * @param {GraphNode} source 
+     * @param {number} [maxDistance=100000] the max number of edges between source and returned ndoes
+     * @returns {object} object containing list of nodes and list of edges
+     */
     getConnectedReverse(source, maxDistance = 100000){
         let visited = [];
         let visitedEdges = [];
@@ -272,22 +309,6 @@ export default class Graph extends THREE.Object3D {
             }
         }
         return {"nodes": visited, "edges": visitedEdges};
-    }
-
-
-    //Call circlelayout on nonvisited nodes, update edge geometry
-    circleLayout(){
-        for(let node of this.nodes){
-            if(node && !node.visited){
-                this.visitAndCircleLayout(node, {xmin: 0, xmax: Math.PI, ymin: 0, ymax: Math.PI*2, radius: 2, addition: 2});
-            }
-        }
-        if(this.edgeObject){
-            this.updateEdgeGeom()
-        }
-        else{
-            this.setEdgeGeom();
-        }
     }
 
     setEdgeGeom(){
@@ -423,56 +444,4 @@ export default class Graph extends THREE.Object3D {
         this.edgeObject.geometry.addAttribute('color', new THREE.Float32BufferAttribute(this.edgeObject.colors, 3));
     }
 
-    //Layout technique taken from GML plugin for CalVR
-    visitAndCircleLayout(node, parameters){
-        node.visited = true;
-
-
-        let tempaddition = parameters.addition * 0.9;
-        let tempradius = parameters.radius + tempaddition;
-
-        let px = (parameters.xmin + parameters.xmax) / 2;
-        let py = (parameters.ymin + parameters.ymax) / 2;
-        node.position.set(tempradius * Math.sin(px) * Math.cos(py), tempradius * Math.sin(px) * Math.sin(py), tempradius * Math.cos(px));
-
-        let numChildren = node.edges.length;
-
-        if(numChildren > 0){
-            let sqri = Math.ceil(Math.sqrt(numChildren));
-            let difx = (parameters.xmax - parameters.xmin) / sqri;
-            let dify = (parameters.ymax - parameters.ymin) / sqri;
-    
-
-
-            let tempymin = parameters.ymin;
-            let tempymax = parameters.ymin + dify;
-            for(let i = 0; i < sqri; ++i){
-                let tempxmin = parameters.xmin;
-                let tempxmax = parameters.xmin + difx;
-                for(let j = 0; j < sqri; ++j){
-                    let n = i * sqri + j;
-                    if(n >= numChildren){
-                        continue;
-                    }
-                    
-                    let newNode = node.edges[n].target;
-
-                    this.visitAndCircleLayout(newNode, 
-                        {
-                            "xmin": tempxmin, 
-                            "xmax": tempxmax, 
-                            "ymin": tempymin, 
-                            "ymax": tempymax, 
-                            "radius": tempradius,
-                            "addition": tempaddition
-                        }
-                    );
-                    tempxmax += difx;
-                    tempxmin += difx;
-                }
-                tempymax += dify;
-                tempymin += dify;
-            }
-        }
-    }
 };

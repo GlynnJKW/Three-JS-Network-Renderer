@@ -2,8 +2,13 @@ import * as THREE from 'three';
 import EfficientGraph from './EfficientGraph';
 import { sphereMaterial, pickingSphereMaterial } from './Materials';
 
-
+/**
+ * @extends EfficientGraph
+ */
 export default class PickableGraph extends EfficientGraph{
+    /**
+     * Stop displaying the edges and change the material to the picking material (color based on index)
+     */
     prepareForPicking(){
         if(this.edgeObject && this.edgeObject.mesh){
             this.remove(this.edgeObject.mesh);
@@ -14,6 +19,9 @@ export default class PickableGraph extends EfficientGraph{
         }
     }
 
+    /**
+     * Display the edges and change the material back to default
+     */
     revertToNormal(){
         if(this.edgeObject && this.edgeObject.mesh){
             this.add(this.edgeObject.mesh);
