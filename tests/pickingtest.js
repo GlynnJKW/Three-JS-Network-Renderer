@@ -24,10 +24,10 @@ GUI.width = window.innerWidth / 4;
 let GUIOptions = [];
 GUIOptions.push(GUI.add(window, 'minimizeCrossing'));
 
-const nodes = 15;
-const layers = 30;
-const width = 1;
-const height = 1;
+const nodes = 2;
+const layers = 2;
+const width = 10;
+const height = 10;
 
 
 
