@@ -220,9 +220,8 @@ export default class EfficientGraph extends Graph {
         this.edgeObject.material = lineMaterial;
         this.edgeObject.mesh = new THREE.Mesh(this.edgeObject.geometry, this.edgeObject.material);
 
-
+        //If the vis function returns colors, enable colors in the shader and use them
         if(colors != null){
-            console.log(colors);
             this.edgeObject.colors = colors;
             this.edgeObject.geometry.addAttribute('color', new THREE.Float32BufferAttribute(this.edgeObject.colors, 3));
             this.edgeObject.material.vertexColors = THREE.VertexColors;

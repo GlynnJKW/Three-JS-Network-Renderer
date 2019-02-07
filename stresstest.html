@@ -9,7 +9,18 @@
 		</style>
 	</head>
 	<body>
+		<script src="./stats.min.js"></script>
+		<script>
+			var stats = new Stats();
+			document.body.appendChild( stats.dom );
 
+			function loop() {
+				stats.update();
+				requestAnimationFrame( loop );
+			}
+
+			requestAnimationFrame( loop );
+		</script>
         <script src="src/dependencies/jquery.min.js"></script>
 		<script src="src/dependencies/dat.gui.min.js"></script>
 		<script src="dist/network.bundle.js"></script>
