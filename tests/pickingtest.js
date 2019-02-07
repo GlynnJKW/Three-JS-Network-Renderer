@@ -56,7 +56,7 @@ for(let layer = 0; layer < layers; ++layer){
 
 
 for(let e = 0; e < graph.edges.length; ++e){
-    let intensity = (Math.random());
+    let intensity = Math.round(Math.random());
     graph.edges[e].intensity = intensity;
 }
 

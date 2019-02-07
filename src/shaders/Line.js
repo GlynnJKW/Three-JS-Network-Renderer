@@ -3,6 +3,7 @@ const vertex =
     uniform vec3 color0;
     uniform vec3 color1;
     uniform vec2 screen;
+    uniform float scale;
 
     attribute float intensity;
     attribute vec3 direction;
@@ -12,33 +13,34 @@ const vertex =
 
 
     void main(){
+        float width = (abs(0.5 - intensity) * 2.0);
 #ifdef USE_COLOR
         col = vec4(color, 1);
 #else
-        float alpha = (abs(0.5 - intensity) * 2.0);
         vec3 albedo;
         if(intensity > 0.5){
-            albedo = color1;// * alpha;
+            albedo = color1;
         }
         else{
-            albedo = color0;// * alpha;
+            albedo = color0;
         }
-        col = vec4(albedo, alpha);
+        col = vec4(albedo, 1);
 #endif
 
-        vec3 worldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+        vec4 worldPos = modelMatrix * vec4(position, 1.0);
 
-        vec3 viewDir = normalize(worldPos - cameraPosition);
-        vec3 d = normalize(modelMatrix * vec4(direction, 0.0)).xyz;
+        vec3 viewDir = worldPos - cameraPosition;
+        vec3 d = (modelMatrix * vec4(direction, 0.0)).xyz;
         vec3 u = normalize(cross(d, viewDir));
 
-        worldPos += u * uv.y * 0.1 * (abs(0.5 - intensity) * 2.0);
+        worldPos += vec4(u, 0.0) * uv.y * scale * width;
 
-        vec4 fragpos = projectionMatrix * viewMatrix * vec4(worldPos, 1.0);
+        // vec4 viewPos = viewMatrix * worldPos;
+        // viewPos += vec4(0.0, 1.0, 0.0, 0.0) * uv.y * width * 0.01;
 
         y = uv.y;
 
-        gl_Position = fragpos;
+        gl_Position = projectionMatrix * viewMatrix * worldPos;
     }
     `;
 

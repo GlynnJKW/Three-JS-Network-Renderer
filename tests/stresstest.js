@@ -7,10 +7,10 @@ window.globalCamera = camera;
 document.body.appendChild(renderer.domElement);
 
 
-window["Nodes to add"] = 1000;
+window["Nodes to add"] = 100000;
 
 
-let len = 1000;
+let len = 100000;
 let graph = new Network.EfficientGraph();
 
 
