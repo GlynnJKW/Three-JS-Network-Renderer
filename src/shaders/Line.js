@@ -11,19 +11,6 @@ const vertex =
     varying vec4 col;
     varying float y;
 
-    
-    mat4 rotationMatrix(vec3 axis, float angle)
-    {
-        axis = normalize(axis);
-        float s = sin(angle);
-        float c = cos(angle);
-        float oc = 1.0 - c;
-        
-        return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
-                    oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
-                    oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
-                    0.0,                                0.0,                                0.0,                                1.0);
-    }
 
     void main(){
         float width = (abs(0.5 - intensity) * 2.0);
@@ -40,21 +27,30 @@ const vertex =
         col = vec4(albedo, 1);
 #endif
 
+        // ATTEMPTS AT NOT NEEDED TO USE CROSS PRODUCT
+
+        // vec3 up = (camMatrixWorld * vec4(0, 1, 0, 0)).xyz;
+        // float dotu = dot(d, up); 
+        // float dotr = dot(d, right);
+        // vec3 nondot;
+        // if(abs(dotu) < abs(dotr)){
+        //     nondot = normalize(up - (d * dotu)); //part of viewDir that is orthogonal to direction, normalized
+        // }
+        // else{
+        //     nondot = normalize(right - (d * dotr)); //part of viewDir that is orthogonal to direction, normalized
+        // }
+        // vec3 d = normalize((modelViewMatrix * vec4(direction, 0.0)).xyz);
+        // vec4 viewPos = modelViewMatrix * vec4(position, 1.0);
+        // viewPos += vec4(0.0, 1.0, 0.0, 0.0) * uv.y * width * 0.1;
+
         vec4 worldPos = modelMatrix * vec4(position, 1.0);
 
         vec3 viewDir = normalize(worldPos.xyz - cameraPosition);
         vec3 d = normalize((modelMatrix * vec4(direction, 0.0)).xyz);
-        //mat4 rot = rotationMatrix(d, 1.5708); //rotate 90 degrees
-        float dot = dot(d, viewDir); //dot = a*b*cos(theta) = cos(theta)
-        vec3 nondot = normalize(viewDir - (d * dot)); //part of viewDir that is orthogonal to direction, normalized
+        vec3 c = normalize(cross(d, viewDir));
 
-        col = vec4(viewDir, 1); //(rot * vec4(viewDir, 0)).xyz;
-        vec3 u = normalize(cross(d, viewDir));
+        worldPos += vec4(c, 0.0) * uv.y * scale * width;
 
-        worldPos += vec4(u, 0.0) * uv.y * scale * width;
-
-        // vec4 viewPos = viewMatrix * worldPos;
-        // viewPos += vec4(0.0, 1.0, 0.0, 0.0) * uv.y * width * 0.01;
 
         y = uv.y;
 

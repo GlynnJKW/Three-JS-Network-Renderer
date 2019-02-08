@@ -65,7 +65,7 @@ function addmore(num){
         let col = new Network.Vec3(1, 0.65, 0).multiplyScalar(1 - intensity).add(new Network.Vec3(0, 0, 1).multiplyScalar(intensity));
         graph.nodes[n].color = col;  
 
-        graph.addEdge(`n${i-1}`, `n${i}`);
+        graph.addEdge(`n${n-1}`, `n${n}`);
         graph.edges[graph.edges.length-1].intensity = Math.random();
     }
     len += num;

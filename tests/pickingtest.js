@@ -83,9 +83,10 @@ controls.screenSpacePanning = true;
 
 async function animate(){
     requestAnimationFrame(animate);
-    
+
     renderer.render(scene, camera);
     controls.update();
+    // console.log(camera.local);
 }
 animate();
 
