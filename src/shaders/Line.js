@@ -4,16 +4,18 @@ const vertex =
     uniform vec3 color1;
     uniform vec2 screen;
     uniform float scale;
+    uniform float near;
+    uniform float far;
 
     attribute float intensity;
     attribute vec3 direction;
 
     varying vec4 col;
     varying float y;
-
+    varying float width;
 
     void main(){
-        float width = (abs(0.5 - intensity) * 2.0);
+        width = (abs(0.5 - intensity) * 2.0);
 #ifdef USE_COLOR
         col = vec4(color, 1);
 #else
@@ -68,13 +70,38 @@ const fragment =
     varying vec4 col;
     varying float y;
 
+#ifdef FAKE_DEPTH
+    varying float width;
+    uniform highp float near;
+    uniform highp float far;
+    uniform highp float scale;
+    uniform highp mat4 projectionMatrix;
+
+    float trueDepth(float d){
+        return 2.0 * near * far / (far + near - d * (far - near));
+    }
+
+    float fakeDepth(float d){
+        float A = projectionMatrix[2].z;
+        float B = projectionMatrix[3].z;
+        return 0.5 * (-A*d + B) / d + 0.5;
+    }
+#endif
+
     void main(){
         float rad = y * y;
         if(rad > 1.0){
             discard;
         }
         gl_FragColor = vec4(col.rgb * pow(1.0 - rad, 0.5), 1);
-        gl_FragDepthEXT = gl_FragCoord.z * ( 1.0 - (1.0 - rad) * 0.01);
+
+#ifdef FAKE_DEPTH
+        float d = trueDepth(gl_FragCoord.z);
+        float z = sqrt(1.0 - rad); // y^2 + z^2 = 1 > z = sqrt(1 - y^2)
+        d = d - z * (scale / 50.0) * width;
+        float fd = fakeDepth(d);
+        gl_FragDepthEXT = fd; 
+#endif
     }
     `;
 

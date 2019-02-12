@@ -9,10 +9,15 @@ const sphereMaterial = new ShaderMaterial(
         "vertexColors": VertexColors,
         "uniforms": {
             "screen": {value: new Vector2(1920, 1080)},
-            "radius": {value: 100}
+            "radius": {value: 100},
+            "near": {value: 0.1},
+            "far": {value: 1000}
         },
         "extensions": {
             fragDepth: true
+        },
+        "defines": {
+            FAKE_DEPTH: true
         }
     }
 );
@@ -27,10 +32,15 @@ const lineMaterial = new ShaderMaterial(
             "screen": {value: new Vector2(1920, 1080)},
             "color0": {value: new Vector3(1, 0.65, 0)},
             "color1": {value: new Vector3(0,0,1)},
-            "scale": {value: 10.0}
+            "scale": {value: 10.0},
+            "near": {value: 0.1},
+            "far": {value: 1000}
         },
         "extensions": {
             fragDepth: true
+        },
+        "defines": {
+            FAKE_DEPTH: true
         }
     }
 );
@@ -44,6 +54,9 @@ const pickingSphereMaterial = new ShaderMaterial(
         "uniforms": {
             "screen": {value: new Vector2(1920, 1080)},
             "radius": {value: 100}
+        },
+        "defines": {
+            FAKE_DEPTH: true
         }
     }
 );
