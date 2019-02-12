@@ -32,7 +32,7 @@ const lineMaterial = new ShaderMaterial(
             "screen": {value: new Vector2(1920, 1080)},
             "color0": {value: new Vector3(1, 0.65, 0)},
             "color1": {value: new Vector3(0,0,1)},
-            "scale": {value: 10.0},
+            "scale": {value: 10},
             "near": {value: 0.1},
             "far": {value: 1000}
         },
@@ -40,7 +40,8 @@ const lineMaterial = new ShaderMaterial(
             fragDepth: true
         },
         "defines": {
-            FAKE_DEPTH: true
+            FAKE_DEPTH: true,
+            CLIP_SPACE: true
         }
     }
 );

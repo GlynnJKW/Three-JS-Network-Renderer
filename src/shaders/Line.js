@@ -29,6 +29,7 @@ const vertex =
         col = vec4(albedo, 1);
 #endif
 
+#ifdef CLIP_SPACE
         vec4 clipPos = projectionMatrix * (modelViewMatrix * vec4( position, 1.0 ) + vec4(0,0,0.1,0));
         float screenz = (clipPos.z/clipPos.w + 1.0)/2.0;
         float zfactor = (1.0 - pow(screenz, 0.5)) * 100.0 + 0.01;
@@ -41,27 +42,19 @@ const vertex =
         vec4 fragpos = clipPos + vec4((clipPos.ww * xyNormal / screen.xy * uv.y) * size, 0, 0);
 
         gl_Position = fragpos;
-
-        /*
+#else
         vec4 worldPos = modelMatrix * vec4(position, 1.0);
         vec3 viewDir = normalize(worldPos.xyz - cameraPosition);
         vec3 d = normalize((modelMatrix * vec4(direction, 0.0)).xyz);
 
-        float dot = dot(d, viewDir); //dot = a*b*cos(theta) = cos(theta)
-        vec3 nondot = normalize(viewDir - (d * dot)); //part of viewDir that is orthogonal to direction, normalized
-
-        col = vec4(viewDir, 1); //(rot * vec4(viewDir, 0)).xyz;
         vec3 u = normalize(cross(d, viewDir));
 
         worldPos += vec4(u, 0.0) * uv.y * scale * width;
 
-        // vec4 viewPos = viewMatrix * worldPos;
-        // viewPos += vec4(0.0, 1.0, 0.0, 0.0) * uv.y * width * 0.01;
-
         y = uv.y;
 
         gl_Position = projectionMatrix * viewMatrix * worldPos;
-        */
+#endif
     }
     `;
 
@@ -98,7 +91,12 @@ const fragment =
 #ifdef FAKE_DEPTH
         float d = trueDepth(gl_FragCoord.z);
         float z = sqrt(1.0 - rad); // y^2 + z^2 = 1 > z = sqrt(1 - y^2)
-        d = d - z * (scale / 50.0) * width;
+#ifdef CLIP_SPACE
+        float s = scale * 0.02;
+#else
+        float s = scale;
+#endif
+        d = max(d - z * s * width, near * 1.01);
         float fd = fakeDepth(d);
         gl_FragDepthEXT = fd; 
 #endif

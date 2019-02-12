@@ -65,7 +65,7 @@ const fragment =
 #ifdef FAKE_DEPTH
         float d = trueDepth(gl_FragCoord.z);
         float z = sqrt(1.0 - rad); // y^2 + z^2 = 1 > z = sqrt(1 - y^2)
-        d = d - z * (radius / 50.0);
+        d = max(d - z * (radius / 50.0), near * 1.01);
         float fd = fakeDepth(d);
         gl_FragDepthEXT = fd; 
 #endif    
