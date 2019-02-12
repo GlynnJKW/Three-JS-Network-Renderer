@@ -56,6 +56,8 @@ const fragment =
             discard;
         }
         gl_FragColor = vec4(test.rgb * pow((1.0 - rad), 0.5), 1);
+        // really bad depth approx for now
+        gl_FragDepthEXT = gl_FragCoord.z * ( 1.0 - (1.0 - rad) * 0.01);
     }
     `;
 

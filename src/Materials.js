@@ -10,6 +10,9 @@ const sphereMaterial = new ShaderMaterial(
         "uniforms": {
             "screen": {value: new Vector2(1920, 1080)},
             "radius": {value: 100}
+        },
+        "extensions": {
+            fragDepth: true
         }
     }
 );
@@ -25,6 +28,9 @@ const lineMaterial = new ShaderMaterial(
             "color0": {value: new Vector3(1, 0.65, 0)},
             "color1": {value: new Vector3(0,0,1)},
             "scale": {value: 10.0}
+        },
+        "extensions": {
+            fragDepth: true
         }
     }
 );

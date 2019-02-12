@@ -70,10 +70,11 @@ const fragment =
 
     void main(){
         float rad = y * y;
-        if(rad > 0.5){
+        if(rad > 1.0){
             discard;
         }
-        gl_FragColor = vec4(col.rgb * pow(1.0 - rad*2.0, 0.5), 1);
+        gl_FragColor = vec4(col.rgb * pow(1.0 - rad, 0.5), 1);
+        gl_FragDepthEXT = gl_FragCoord.z * ( 1.0 - (1.0 - rad) * 0.01);
     }
     `;
 
