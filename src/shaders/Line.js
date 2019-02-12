@@ -11,19 +11,6 @@ const vertex =
     varying vec4 col;
     varying float y;
 
-    
-    mat4 rotationMatrix(vec3 axis, float angle)
-    {
-        axis = normalize(axis);
-        float s = sin(angle);
-        float c = cos(angle);
-        float oc = 1.0 - c;
-        
-        return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
-                    oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
-                    oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
-                    0.0,                                0.0,                                0.0,                                1.0);
-    }
 
     void main(){
         float width = (abs(0.5 - intensity) * 2.0);
@@ -40,11 +27,24 @@ const vertex =
         col = vec4(albedo, 1);
 #endif
 
-        vec4 worldPos = modelMatrix * vec4(position, 1.0);
+        vec4 clipPos = projectionMatrix * (modelViewMatrix * vec4( position, 1.0 ) + vec4(0,0,0.1,0));
+        float screenz = (clipPos.z/clipPos.w + 1.0)/2.0;
+        float zfactor = (1.0 - pow(screenz, 0.5)) * 100.0 + 0.01;
 
+        float size = width * zfactor * scale;
+        y = uv.y;
+
+        vec4 clipDir = projectionMatrix * (modelViewMatrix * vec4( direction, 0.0 ));
+        vec2 xyNormal = normalize(vec2(-clipDir.y, clipDir.x));
+        vec4 fragpos = clipPos + vec4((clipPos.ww * xyNormal / screen.xy * uv.y) * size, 0, 0);
+
+        gl_Position = fragpos;
+
+        /*
+        vec4 worldPos = modelMatrix * vec4(position, 1.0);
         vec3 viewDir = normalize(worldPos.xyz - cameraPosition);
         vec3 d = normalize((modelMatrix * vec4(direction, 0.0)).xyz);
-        //mat4 rot = rotationMatrix(d, 1.5708); //rotate 90 degrees
+
         float dot = dot(d, viewDir); //dot = a*b*cos(theta) = cos(theta)
         vec3 nondot = normalize(viewDir - (d * dot)); //part of viewDir that is orthogonal to direction, normalized
 
@@ -59,6 +59,7 @@ const vertex =
         y = uv.y;
 
         gl_Position = projectionMatrix * viewMatrix * worldPos;
+        */
     }
     `;
 

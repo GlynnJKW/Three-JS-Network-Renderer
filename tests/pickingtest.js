@@ -71,6 +71,11 @@ graph.setNodeGeom();
 
 
 scene.add(graph);
+scene.add( new THREE.GridHelper(10, 10) );
+scene.add( new THREE.AxesHelper(10) );
+let gridhelp = new THREE.GridHelper(10, 10);
+gridhelp.lookAt(new THREE.Vector3(0,1,0));
+scene.add(gridhelp);
 window.graph = graph;
 
 
