@@ -15,6 +15,7 @@ export default class PickableGraph extends EfficientGraph{
         }
 
         if(this.nodesObject && this.nodesObject.mesh){
+            this._savedMaterial = this.nodesObject.mesh.material
             this.nodesObject.mesh.material = pickingSphereMaterial;
         }
     }
@@ -28,7 +29,7 @@ export default class PickableGraph extends EfficientGraph{
         }
 
         if(this.nodesObject && this.nodesObject.mesh){
-            this.nodesObject.mesh.material = sphereMaterial;
+            this.nodesObject.mesh.material = this._savedMaterial;
         }
     }
 

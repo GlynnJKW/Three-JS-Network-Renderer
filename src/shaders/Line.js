@@ -4,8 +4,10 @@ const vertex =
     uniform vec3 color1;
     uniform vec2 screen;
     uniform float scale;
+#ifdef FAKE_DEPTH
     uniform float near;
     uniform float far;
+#endif
 
     attribute float intensity;
     attribute vec3 direction;
@@ -34,7 +36,7 @@ const vertex =
         float screenz = (clipPos.z/clipPos.w + 1.0)/2.0;
         float zfactor = (1.0 - pow(screenz, 0.5)) * 100.0 + 0.01;
 
-        float size = width * zfactor * scale;
+        float size = width * zfactor * scale * 200.0;
         y = uv.y;
 
         vec4 clipDir = projectionMatrix * (modelViewMatrix * vec4( direction, 0.0 ));
@@ -91,12 +93,7 @@ const fragment =
 #ifdef FAKE_DEPTH
         float d = trueDepth(gl_FragCoord.z);
         float z = sqrt(1.0 - rad); // y^2 + z^2 = 1 > z = sqrt(1 - y^2)
-#ifdef CLIP_SPACE
-        float s = scale * 0.02;
-#else
-        float s = scale;
-#endif
-        d = max(d - z * s * width, near * 1.01);
+        d = max(d - z * scale * width, near * 1.01);
         float fd = fakeDepth(d);
         gl_FragDepthEXT = fd; 
 #endif

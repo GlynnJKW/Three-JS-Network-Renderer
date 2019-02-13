@@ -1,33 +1,41 @@
+//#region setup
 const scene = new THREE.Scene();
 const renderer = new THREE.WebGLRenderer({
     antialias: true
 });
 scene.background = new THREE.Color(0,0,0);
+const cv = document.getElementById('canvas')
 
-let camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-window.globalCamera = camera;
+let camera = new THREE.PerspectiveCamera( 75, cv.clientWidth / window.innerHeight, 0.1, 1000 );
 
-renderer.setSize(window.innerWidth, window.innerHeight);
-Network.Materials.sphereMaterial.uniforms.screen.value.set(window.innerWidth, window.innerHeight);
-Network.Materials.lineMaterial.uniforms.screen.value.set(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+cv.appendChild(renderer.domElement);
+//Done twice to prevent mismatch
+renderer.setSize(cv.clientWidth, window.innerHeight);
+renderer.setSize(cv.clientWidth, window.innerHeight);
 
-
-
-
+window.addEventListener('resize', () => {
+    renderer.setSize(cv.clientWidth, window.innerHeight);
+    camera.aspect = cv.clientWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    Network.Materials.sphereMaterial.uniforms.screen.value.set(cv.clientWidth, window.innerHeight);
+    Network.Materials.lineMaterial.uniforms.screen.value.set(cv.clientWidth, window.innerHeight);
+    pickingTexture = new THREE.WebGLRenderTarget(renderer.getSize().width, renderer.getSize().height);
+});
+Network.Materials.sphereMaterial.uniforms.screen.value.set(cv.clientWidth, window.innerHeight);
+Network.Materials.lineMaterial.uniforms.screen.value.set(cv.clientWidth, window.innerHeight);
 
 
 
 let currentlySelected = null;
 const GUI = new dat.GUI();
-GUI.width = window.innerWidth / 4;
+GUI.width = cv.clientWidth / 4;
 let GUIOptions = [];
 GUIOptions.push(GUI.add(window, 'minimizeCrossing'));
 
-const nodes = 2;
-const layers = 2;
-const width = 10;
-const height = 10;
+const nodes = 20;
+const layers = 40;
+const width = 5;
+const height = 5;
 
 
 
@@ -40,7 +48,7 @@ graph.scale.set(width, height, 1);
 
 let graph2 = new Network.PickableGraph();
 graph2.position.copy(graph.position);
-graph2.scale.copy(graph2.scale);
+graph2.scale.copy(graph.scale);
 
 let renderGraph = graph;
 
@@ -71,16 +79,12 @@ graph.setNodeGeom();
 
 
 scene.add(graph);
-scene.add( new THREE.GridHelper(10, 10) );
-scene.add( new THREE.AxesHelper(10) );
-let gridhelp = new THREE.GridHelper(10, 10);
-gridhelp.lookAt(new THREE.Vector3(0,1,0));
-scene.add(gridhelp);
-window.graph = graph;
+// scene.add( new THREE.GridHelper(10, 10) );
+// scene.add( new THREE.AxesHelper(10) );
+// let gridhelp = new THREE.GridHelper(10, 10);
+// gridhelp.lookAt(new THREE.Vector3(0,1,0));
+// scene.add(gridhelp);
 
-
-
-// camera.position.z = 50;
 camera.position.set(0,0,50);
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -94,8 +98,11 @@ async function animate(){
 }
 animate();
 
+//#endregion
+
+//#region selection buffer
 const w = window.innerHeight;
-const h = window.innerWidth;
+const h = cv.clientWidth;
 let pickingScene = new THREE.Scene();
 let pickingTexture = new THREE.WebGLRenderTarget(renderer.getSize().width, renderer.getSize().height);
 // pickingTexture.texture.minFilter = THREE.LinearFilter;
@@ -106,33 +113,22 @@ canvas.addEventListener('click', function(e){
 });
 
 function pick(event){
-    
+    //Setup and render graph using picking material
     renderGraph.prepareForPicking();
     pickingScene.add(renderGraph);
     renderer.render(pickingScene, camera, pickingTexture);
     renderGraph.revertToNormal();
     scene.add(renderGraph);
 
-
+    //get id and display info for selected node / remove info if blank
     let pixelBuffer = new Uint8Array(4);
     renderer.readRenderTargetPixels(pickingTexture, event.clientX, pickingTexture.height - event.clientY, 1, 1, pixelBuffer);
     let id = (pixelBuffer[0]<<16)|(pixelBuffer[1]<<8)|(pixelBuffer[2]);
-    // console.log(event, pixelBuffer, id);
     if(id){
         currentlySelected = graph.nodes[id-1];
         setGUI(currentlySelected);
         console.log(id, pixelBuffer);
         console.log(graph.nodes[id-1], graph.getConnectedReverse(graph.nodes[id-1]));
-
-        // let ng = graph.getConnectedReverse(graph.nodes[id-1]);
-        // graph2.nodes = ng.nodes;
-        // graph2.edges = ng.edges;
-        // graph2.setEdgeGeom();
-        // graph2.setNodeGeom();
-
-        // renderGraph = graph2;
-        // scene.remove(graph);
-        // scene.add(graph2);
     }
     else{
         renderGraph = graph;
@@ -141,7 +137,9 @@ function pick(event){
         setGUI();
     }
 }
+//#endregion
 
+//#region datGUI
 function setGUI(node){
     console.log(node);
     for(let pop of GUIOptions){
@@ -208,3 +206,51 @@ function minimizeCrossing(){
     graph.updateNodeGeom();
     graph.updateEdgeGeom();
 }
+//#endregion
+
+//#region Material modification
+
+document.getElementById("LINE_CLIP_SPACE").addEventListener('click', () => {
+    let element = document.getElementById("LINE_CLIP_SPACE");
+    let active = element.classList.contains('selected');
+    if(active){
+        element.classList.remove('selected');
+        Network.Materials.lineMaterial.defines.CLIP_SPACE = false;
+    }
+    else{
+        element.classList.add('selected');
+        Network.Materials.lineMaterial.defines.CLIP_SPACE = true;
+    }
+    graph.edgeObject.material.needsUpdate = true;
+});
+
+document.getElementById("LINE_FAKE_DEPTH").addEventListener('click', () => {
+    let element = document.getElementById("LINE_FAKE_DEPTH");
+    let active = element.classList.contains('selected');
+    if(active){
+        element.classList.remove('selected');
+        Network.Materials.lineMaterial.defines.FAKE_DEPTH = false;
+    }
+    else{
+        element.classList.add('selected');
+        Network.Materials.lineMaterial.defines.FAKE_DEPTH = true;
+    }
+    graph.edgeObject.material.needsUpdate = true;
+});
+
+document.getElementById("NODE_FAKE_DEPTH").addEventListener('click', () => {
+    let element = document.getElementById("NODE_FAKE_DEPTH");
+    let active = element.classList.contains('selected');
+    if(active){
+        element.classList.remove('selected');
+        Network.Materials.sphereMaterial.defines.FAKE_DEPTH = false;
+    }
+    else{
+        element.classList.add('selected');
+        Network.Materials.sphereMaterial.defines.FAKE_DEPTH = true;
+    }
+    graph.nodesObject.material.needsUpdate = true;
+    graph2.nodesObject.material.needsUpdate = true;
+});
+
+//#endregion
