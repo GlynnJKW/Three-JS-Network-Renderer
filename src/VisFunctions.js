@@ -30,13 +30,11 @@ function StandardNodeVisFunction(node){
  * @return {EdgeVisInfo} 
  */
 function StandardEdgeVisFunction(edge){
-    let c = edge.color;
-    if(!c){ c = new Vec3(1,1,1); }
     let i = edge.intensity;
     if(i == null){
         i = 0.5;
     }
-    return {color: c, intensity: i}
+    return {intensity: i}
 }
 
 /**

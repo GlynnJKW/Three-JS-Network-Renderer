@@ -26,7 +26,7 @@ export default class EfficientGraph extends Graph {
         super();
 
         this.nodeVisFunction = VisFunctions.StandardNodeVisFunction;
-        this.edgeVisFunction = VisFunctions.RedGreenEdgeVisFunction;
+        this.edgeVisFunction = VisFunctions.StandardEdgeVisFunction;
     }
 
     /**
@@ -133,8 +133,7 @@ export default class EfficientGraph extends Graph {
         }
 
         let colors = null;
-        //Only use colors if edgevisfunction returns color
-        console.log(this.edgeVisFunction({}));
+        // Only use colors if edgevisfunction returns color
         if(this.edgeVisFunction({}).color != undefined){
             colors = new Float32Array(this.edges.length * 4 * 3);
         }
@@ -295,35 +294,55 @@ export default class EfficientGraph extends Graph {
         this.edgeObject.geometry.attributes.direction.needsUpdate = true;
     }
 
-    /**
-     * updates the intensities of the attribute buffer to be the same as the intensities of the actual edges
-     */
-    updateAllIntensities(){
-        //Get array object from buffer
-        let intensities = this.edgeObject.geometry.attributes.intensity.array;
-        //Iterate through edges, updating the buffer if appropriate
-        for(let i = 0; i < this.edges.length; i += 1){
-            if(this.edges[i].intensity != undefined){
-                const v = i * 4
-                intensities[v] = intensities[v + 1] = intensities[v + 2] = intensities[v + 3] = this.edges[i].intensity;
+    updateVis(){
+        //update edge arrays
+        let edgeColors = null;
+        if(this.edgeVisFunction({}).color != undefined){
+            if(this.edgeObject.geometry.attributes.color){
+                edgeColors = this.edgeObject.geometry.attributes.color.array;
+            }
+            else{
+                this.edgeObject.colors = new Float32Array(this.edges.length * 4 * 3); 
+                this.edgeObject.geometry.addAttribute('color', new THREE.Float32BufferAttribute(this.edgeObject.colors, 3));
+            }
+            this.edgeObject.material.vertexColors = THREE.VertexColors;
+        }
+        else{
+            this.edgeObject.material.vertexColors = THREE.NoColors;
+        }
+        this.edgeObject.material.needsUpdate = true;
+
+        let edgeIntensities = this.edgeObject.geometry.attributes.intensity.array;
+        for(let i = 0, len = this.edges.length; i < len; ++i){
+            let info = this.edgeVisFunction(this.edges[i])
+
+            edgeIntensities[i*4] = edgeIntensities[i*4+1] = edgeIntensities[i*4+2] = edgeIntensities[i*4+3] = info.intensity;
+
+            if(edgeColors != null){
+                let d = i * 12;
+                edgeColors[d] = edgeColors[d+3] = edgeColors[d+6] = edgeColors[d+9] = info.color.r;
+                edgeColors[d+1] = edgeColors[d+4] = edgeColors[d+7] = edgeColors[d+10] = info.color.g;
+                edgeColors[d+2] = edgeColors[d+5] = edgeColors[d+8] = edgeColors[d+11] = info.color.b;    
             }
         }
-        //Set 'dirty' tag on buffer so that buffer in vram will be updated
-        this.edgeObject.geometry.attributes.intensity.needsUpdate = true;
-        this.edgeObject.intensity = intensities;
-    }
 
-    /**
-     * Update the intensity of the edge at index 'index' to be intensity 'intensity'
-     * @param {number} index 
-     * @param {number} intensity 
-     */
-    updateIntensity(index, intensity){
-        //Update appropriate indices in buffer and set dirty tag
-        let i = this.edgeObject.geometry.attributes.intensity.array;
-        const v = index * 4;
-        i[v] = i[v + 1] = i[v + 2] = i[v + 3] = intensity;
+
+        //update node arrays
+        let nodeColors = this.nodesObject.geometry.attributes.color.array;
+
+        for(let i = 0, len = this.nodes.length; i < len; ++i){
+            let col = (this.nodeVisFunction(this.nodes[i])).color;
+
+            let c = i * 9;
+            nodeColors[c] = nodeColors[c+3] = nodeColors[c+6] = col.r;
+            nodeColors[c+1] = nodeColors[c+4] = nodeColors[c+7] = col.g;
+            nodeColors[c+2] = nodeColors[c+5] = nodeColors[c+8] = col.b;
+        }
+
+        //set update flags
         this.edgeObject.geometry.attributes.intensity.needsUpdate = true;
+        if(edgeColors) this.edgeObject.geometry.attributes.color.needsUpdate = true;
+        this.nodesObject.geometry.attributes.color.needsUpdate = true;
     }
 
 };
