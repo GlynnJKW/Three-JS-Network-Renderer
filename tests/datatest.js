@@ -1,7 +1,7 @@
 //#region setup
 let displayEdges = true;
 let displayNodes = true;
-let len = 100000;
+let len = 1000000;
 const scene = new THREE.Scene();
 const renderer = new THREE.WebGLRenderer();
 
@@ -29,13 +29,16 @@ let graph = new Network.EfficientGraph();
 graph.addNode({name: `n0`, position: new Network.Vec3(0,0,0), edges: []});
 for(let i = 1; i < len; ++i){
     let node = new Network.EfficientNode({name: `n${i}`, position: new Network.Vec3(0,0,0)});
+    node.data1 = Math.random();
+    node.data2 = Math.random();
     graph.addNode(node);
     graph.addEdge(`n${i-1}`, `n${i}`);
 }
 
 for(let e = 0; e < graph.edges.length; ++e){
-    let intensity = (Math.random());
-    graph.edges[e].intensity = intensity;
+    graph.edges[e].intensity = Math.random();
+    graph.edges[e].data1 = Math.random();
+
 }
 
 for(let n = 0; n < graph.nodes.length; ++n){
@@ -79,26 +82,40 @@ function animate(){
 animate();
 
 //#region jqueryGUI
+let NodeVisOptions = {
+    func: function(node){
+        let c = node.color;
+        if(!c){ c = new Vec3(1,1,1); }
+        return {color: c}
+    }
+};
+
 let EdgeVisOptions = {
     func: function(edge){
         let i = edge.intensity;
         let ai = Math.abs(i * 2 - 1);
+        let w = 0;
         if(i == null || 
             ai < this.intensity.min || ai > this.intensity.max ||
             (i > 0.5 && this.intensity.sign == -1) ||
             (i < 0.5 && this.intensity.sign == 1)
         ){
-            i = 0.5;
         }
-        return {intensity: i}
+        else{
+            w = Math.abs(0.5 - i) * 2;
+        }
+        let c = new Network.Vec3(1 - i, i, 0);
+        return {color: c, width: w}
     },
     intensity: {
         min: 0,
         max: 1,
         sign: 0
     }
-}
+};
+
 graph.edgeVisFunction = EdgeVisOptions.func.bind(EdgeVisOptions);
+graph.nodeVisFunction = NodeVisOptions.func.bind(NodeVisOptions);
 $( function() {
     $( "#intensity-range" ).slider({
         range: true,
@@ -110,7 +127,7 @@ $( function() {
             $( "#intensity-amount" ).val( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
             EdgeVisOptions.intensity.min = ui.values[0];
             EdgeVisOptions.intensity.max = ui.values[1];
-            graph.updateVis();
+            graph.updateVisDelayed(100);
         }
     });
     $( "#intensity-amount" ).val( $( "#intensity-range" ).slider( "values", 0 ) + " - " + $( "#intensity-range" ).slider( "values", 1 ) );
@@ -135,7 +152,7 @@ $( function() {
             }
             $( "#sign-label" ).val( type );
             EdgeVisOptions.intensity.sign = ui.value;
-            graph.updateVis();
+            graph.updateVisDelayed(100);
         }
     });
     $( "#sign-label" ).val("Any");

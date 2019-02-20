@@ -27,6 +27,7 @@ export default class EfficientGraph extends Graph {
 
         this.nodeVisFunction = VisFunctions.StandardNodeVisFunction;
         this.edgeVisFunction = VisFunctions.StandardEdgeVisFunction;
+        this._visQueued = 0;
     }
 
     /**
@@ -52,46 +53,42 @@ export default class EfficientGraph extends Graph {
         }
         let vertices = [];
         let uvs = [];
-        let indices = [];
         let colors = [];
+        let width = [];
         
         for(let i = 0; i < this.nodes.length; i += 1){
             let pos = this.nodes[i].position;
-            let col = this.nodeVisFunction(this.nodes[i]).color;
+            let info = this.nodeVisFunction(this.nodes[i]);
+            let col = info.color;
+            let w = info.width;
 
 
-            //4 vertices per node
+            //3 vertices per node
             vertices.push(pos.x, pos.y, pos.z);
             vertices.push(pos.x, pos.y, pos.z);
             vertices.push(pos.x, pos.y, pos.z);
             // vertices.push(pos.x, pos.y, pos.z);
 
             //1 color per vertex
-            if(col){
-                colors.push(col.x, col.y, col.z);
-                colors.push(col.x, col.y, col.z);
-                colors.push(col.x, col.y, col.z);
-                // colors.push(col.x, col.y, col.z);
-            }
-            else{
-                colors.push(1,1,1,1,1,1,1,1,1);
-            }
+            colors.push(col.x, col.y, col.z);
+            colors.push(col.x, col.y, col.z);
+            colors.push(col.x, col.y, col.z);
 
-            // uvs.push(0, 1.5, 0.86602540378, -1, -0.86602540378, -1);
+
+            // 2 uvs per vertex
             uvs.push(0, 2, 1.73205080757, -1, -1.73205080757, -1);
 
-            let bind = i * 3;
-            // indices.push(bind, bind+2, bind+1,  bind+2, bind+3, bind+1);
-            indices.push(bind, bind+2, bind+1);
+            // 1 width per vertex
+            width.push(w,w,w);
         }
 
-        this.nodesObject = {vertices, uvs, colors, indices};
+        this.nodesObject = {vertices, uvs, colors, width};
 
         this.nodesObject.geometry = new THREE.BufferGeometry();
         this.nodesObject.geometry.addAttribute('position', new THREE.Float32BufferAttribute(this.nodesObject.vertices, 3));
         this.nodesObject.geometry.addAttribute('uv', new THREE.Float32BufferAttribute(this.nodesObject.uvs, 2));
         this.nodesObject.geometry.addAttribute('color', new THREE.Float32BufferAttribute(this.nodesObject.colors, 3));
-        // this.nodesObject.geometry.setIndex(this.nodesObject.indices);
+        this.nodesObject.geometry.addAttribute('width', new THREE.Float32BufferAttribute(this.nodesObject.width, 1));
 
         this.nodesObject.material = sphereMaterial;
         this.nodesObject.mesh = new THREE.Mesh(this.nodesObject.geometry, this.nodesObject.material);
@@ -140,7 +137,7 @@ export default class EfficientGraph extends Graph {
 
         let vertices = new Float32Array(this.edges.length * 4 * 3);
         let uvs = new Float32Array(this.edges.length * 4 * 2);
-        let intensity = new Float32Array(this.edges.length * 4);
+        let width = new Float32Array(this.edges.length * 4);
         let directions = new Float32Array(this.edges.length * 4 * 3);
         let indices = [];
 
@@ -189,10 +186,10 @@ export default class EfficientGraph extends Graph {
             //#endregion
 
 
-            //#region intensity/color
+            //#region width/color
             let info = this.edgeVisFunction(this.edges[i])
 
-            intensity[i*4] = intensity[i*4+1] = intensity[i*4+2] = intensity[i*4+3] = info.intensity;
+            width[i*4] = width[i*4+1] = width[i*4+2] = width[i*4+3] = info.width;
 
             if(colors != null){
                 colors[d] = colors[d+3] = colors[d+6] = colors[d+9] = info.color.r;
@@ -207,14 +204,14 @@ export default class EfficientGraph extends Graph {
 
         }
 
-        this.edgeObject = {vertices, indices, uvs, intensity, directions};
+        this.edgeObject = {vertices, indices, uvs, width, directions};
 
         this.edgeObject.geometry = new THREE.BufferGeometry();
         this.edgeObject.geometry.setIndex(this.edgeObject.indices);
 
         this.edgeObject.geometry.addAttribute('position', new THREE.Float32BufferAttribute(this.edgeObject.vertices, 3));
         this.edgeObject.geometry.addAttribute('direction', new THREE.Float32BufferAttribute(this.edgeObject.directions, 3));
-        this.edgeObject.geometry.addAttribute('intensity', new THREE.Float32BufferAttribute(this.edgeObject.intensity, 1));
+        this.edgeObject.geometry.addAttribute('width', new THREE.Float32BufferAttribute(this.edgeObject.width, 1));
         this.edgeObject.geometry.addAttribute('uv', new THREE.Float32BufferAttribute(this.edgeObject.uvs, 2));
         this.edgeObject.material = lineMaterial;
         this.edgeObject.mesh = new THREE.Mesh(this.edgeObject.geometry, this.edgeObject.material);
@@ -244,12 +241,12 @@ export default class EfficientGraph extends Graph {
         vertices = this.edgeObject.geometry.attributes.position.array;
 
         //update colors buffer and array size if necessary
-        if(this.edgeObject.intensity.length != this.edges.length * 4){
-            this.edgeObject.intensity = new Float32Array(this.edges.length * 4);
-            this.edgeObject.intensity.fill(0.5);
-            this.edgeObject.geometry.addAttribute('intensity', new THREE.Float32BufferAttribute(this.edgeObject.intensity, 1)); 
+        if(this.edgeObject.width.length != this.edges.length * 4){
+            this.edgeObject.width = new Float32Array(this.edges.length * 4);
+            this.edgeObject.width.fill(0);
+            this.edgeObject.geometry.addAttribute('width', new THREE.Float32BufferAttribute(this.edgeObject.width, 1)); 
         }
-        let intensity = this.edgeObject.geometry.attributes.intensity.array;
+        let width = this.edgeObject.geometry.attributes.width.array;
 
         if(this.edgeObject.directions.length != this.edges.length * 4){
             this.edgeObject.directions = new Float32Array(this.edges.length * 4 * 3);
@@ -287,15 +284,36 @@ export default class EfficientGraph extends Graph {
         //update buffer
         this.edgeObject.vertices = vertices;
         this.edgeObject.directions = directions;
-        this.edgeObject.intensity = intensity;
+        this.edgeObject.width = width;
 
         this.edgeObject.geometry.attributes.position.needsUpdate = true;
-        this.edgeObject.geometry.attributes.intensity.needsUpdate = true;
+        this.edgeObject.geometry.attributes.width.needsUpdate = true;
         this.edgeObject.geometry.attributes.direction.needsUpdate = true;
     }
 
+    /**
+     * Update visualization data (attribute buffers) for nodes and edges
+     */
     updateVis(){
-        //update edge arrays
+        // update node arrays first, because edge vis function can take nodes into account
+        let nodeColors = this.nodesObject.geometry.attributes.color.array;
+        let nodeWidths = this.nodesObject.geometry.attributes.width.array;
+
+        for(let i = 0, len = this.nodes.length; i < len; ++i){
+            let info = (this.nodeVisFunction(this.nodes[i]));
+            let col = info.color;
+            let w = info.width;
+
+            let c = i * 9;
+            nodeColors[c] = nodeColors[c+3] = nodeColors[c+6] = col.r;
+            nodeColors[c+1] = nodeColors[c+4] = nodeColors[c+7] = col.g;
+            nodeColors[c+2] = nodeColors[c+5] = nodeColors[c+8] = col.b;
+
+            let d = i * 3
+            nodeWidths[d] = nodeWidths[d+1] = nodeWidths[d+2] = w;
+        }
+
+        // update edge arrays
         let edgeColors = null;
         if(this.edgeVisFunction({}).color != undefined){
             if(this.edgeObject.geometry.attributes.color){
@@ -312,11 +330,11 @@ export default class EfficientGraph extends Graph {
         }
         this.edgeObject.material.needsUpdate = true;
 
-        let edgeIntensities = this.edgeObject.geometry.attributes.intensity.array;
+        let edgeWidths = this.edgeObject.geometry.attributes.width.array;
         for(let i = 0, len = this.edges.length; i < len; ++i){
             let info = this.edgeVisFunction(this.edges[i])
 
-            edgeIntensities[i*4] = edgeIntensities[i*4+1] = edgeIntensities[i*4+2] = edgeIntensities[i*4+3] = info.intensity;
+            edgeWidths[i*4] = edgeWidths[i*4+1] = edgeWidths[i*4+2] = edgeWidths[i*4+3] = info.width;
 
             if(edgeColors != null){
                 let d = i * 12;
@@ -327,22 +345,28 @@ export default class EfficientGraph extends Graph {
         }
 
 
-        //update node arrays
-        let nodeColors = this.nodesObject.geometry.attributes.color.array;
 
-        for(let i = 0, len = this.nodes.length; i < len; ++i){
-            let col = (this.nodeVisFunction(this.nodes[i])).color;
-
-            let c = i * 9;
-            nodeColors[c] = nodeColors[c+3] = nodeColors[c+6] = col.r;
-            nodeColors[c+1] = nodeColors[c+4] = nodeColors[c+7] = col.g;
-            nodeColors[c+2] = nodeColors[c+5] = nodeColors[c+8] = col.b;
-        }
 
         //set update flags
-        this.edgeObject.geometry.attributes.intensity.needsUpdate = true;
+        this.edgeObject.geometry.attributes.width.needsUpdate = true;
         if(edgeColors) this.edgeObject.geometry.attributes.color.needsUpdate = true;
         this.nodesObject.geometry.attributes.color.needsUpdate = true;
+    }
+
+    /**
+     * Queues an update for the visualization data
+     * If queue is empty after <input> milliseconds, runs updateVis
+     * Use when there is a lot of data to process and you don't want to cause UI to become unresponsive
+     * @param {number} ms the amount of time to wait in ms
+     */
+    updateVisDelayed(ms){
+        this._visQueued++;
+        setTimeout(() => {
+            this._visQueued--;
+            if(this._visQueued == 0){
+                this.updateVis();
+            }
+        }, ms);
     }
 
 };

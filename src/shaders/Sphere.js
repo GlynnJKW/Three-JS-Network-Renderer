@@ -1,29 +1,34 @@
 const vertex = 
     `
     varying vec2 fraguv;
+    varying vec4 test;
 
     uniform vec2 screen;
     uniform float radius;
     uniform float near;
     uniform float far;
 
-    varying vec4 test;
+    attribute float width;
+    varying float isDisplayed;
 
     void main(){
-        vec4 clipPos = projectionMatrix * (modelViewMatrix * vec4( position, 1.0 ) + vec4(0,0,0.1,0));
-        vec2 size = vec2(radius) / screen.xy;
-        float screenz = (clipPos.z/clipPos.w + 1.0)/2.0;
-        
-        float zfactor = (1.0 - pow(screenz, 0.5)) * 100.0 + 0.01;
-
-        size *= zfactor;
-
-        fraguv = uv;//* 2.0 - vec2(1.0,1.0);
-
-
-        vec4 fragpos = clipPos + vec4((clipPos.ww * fraguv.xy) * size, 0, 0);
-
-        gl_Position = fragpos;
+        isDisplayed = width;
+        if(width != 0.0){
+            vec4 clipPos = projectionMatrix * (modelViewMatrix * vec4( position, 1.0 ) + vec4(0,0,0.1,0));
+            vec2 size = vec2(radius) / screen.xy;
+            float screenz = (clipPos.z/clipPos.w + 1.0)/2.0;
+            
+            float zfactor = (1.0 - pow(screenz, 0.5)) * 100.0 + 0.01;
+    
+            size *= zfactor;
+    
+            fraguv = uv;//* 2.0 - vec2(1.0,1.0);
+    
+    
+            vec4 fragpos = clipPos + vec4((clipPos.ww * fraguv.xy) * size, 0, 0);
+    
+            gl_Position = fragpos;
+        }
 #ifdef USE_COLOR
         test.rgb = color;
 #else
@@ -36,6 +41,7 @@ const fragment =
     `
     varying vec2 fraguv;
     varying vec4 test;
+    varying float isDisplayed;
 
 #ifdef FAKE_DEPTH
     uniform highp float near;
@@ -56,6 +62,9 @@ const fragment =
 
 
     void main(){
+        if(isDisplayed == 0.0){
+            discard;
+        }
         float rad = fraguv.x * fraguv.x + fraguv.y * fraguv.y;
         if(rad > 1.0){
             discard;

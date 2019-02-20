@@ -30,8 +30,6 @@ const lineMaterial = new ShaderMaterial(
         "transparent": true,
         "uniforms": {
             "screen": {value: new Vector2(1920, 1080)},
-            "color0": {value: new Vector3(1, 0.65, 0)},
-            "color1": {value: new Vector3(0,0,1)},
             "scale": {value: 0.1},
             "near": {value: 0.1},
             "far": {value: 1000}
