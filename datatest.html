@@ -18,18 +18,27 @@
 				<li id="NODE_FAKE_DEPTH" class="bool selected">Node shader: fake depth - </li>
 				<li id="DISPLAY_NODES" class="bool selected">Display nodes - </li>
 				<li id="DISPLAY_EDGES" class="bool selected">Display edges - </li>
+				<li id="CONNECTED_NODES_ONLY" class="bool">Display connected nodes only - </li>
+				<li id="CONNECTED_EDGES_ONLY" class="bool">Display connected edges only - </li>
 			</ul>
 			<ul>
 				<li>
 					<p>
-						<label for="intensity-amount">Intensity range:</label>
+						<label for="size-amount">Node size range:</label>
+						<input type="text" id="size-amount" readonly style="border:none;">
+					</p>
+					<div id="size-range" style="margin: 0 5%"></div>
+				</li>
+				<li>
+					<p>
+						<label for="intensity-amount">Edge size range:</label>
 						<input type="text" id="intensity-amount" readonly style="border:none;">
 					</p>
 					<div id="intensity-range" style="margin: 0 5%"></div>
 				</li>
 				<li>
 					<p>
-						<label for="sign-label">Sign:</label>
+						<label for="sign-label">Edge sign:</label>
 						<input type="text" id="sign-label" readonly style="border:none;">
 					</p>
 					<div id="intensity-sign" style="margin: 0 5%"></div>

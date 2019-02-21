@@ -15,7 +15,7 @@ const vertex =
         isDisplayed = width;
         if(width != 0.0){
             vec4 clipPos = projectionMatrix * (modelViewMatrix * vec4( position, 1.0 ) + vec4(0,0,0.1,0));
-            vec2 size = vec2(radius) / screen.xy;
+            vec2 size = vec2(radius * width) / screen.xy;
             float screenz = (clipPos.z/clipPos.w + 1.0)/2.0;
             
             float zfactor = (1.0 - pow(screenz, 0.5)) * 100.0 + 0.01;

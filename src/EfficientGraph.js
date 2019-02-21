@@ -82,13 +82,21 @@ export default class EfficientGraph extends Graph {
             width.push(w,w,w);
         }
 
-        this.nodesObject = {vertices, uvs, colors, width};
+        this.nodesObject = {};
 
         this.nodesObject.geometry = new THREE.BufferGeometry();
-        this.nodesObject.geometry.addAttribute('position', new THREE.Float32BufferAttribute(this.nodesObject.vertices, 3));
-        this.nodesObject.geometry.addAttribute('uv', new THREE.Float32BufferAttribute(this.nodesObject.uvs, 2));
-        this.nodesObject.geometry.addAttribute('color', new THREE.Float32BufferAttribute(this.nodesObject.colors, 3));
-        this.nodesObject.geometry.addAttribute('width', new THREE.Float32BufferAttribute(this.nodesObject.width, 1));
+        
+        this.nodesObject.geometry.addAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        this.nodesObject.position = this.nodesObject.geometry.attributes.position.array;
+        
+        this.nodesObject.geometry.addAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+        this.nodesObject.uv = this.nodesObject.geometry.attributes.uv.array;
+
+        this.nodesObject.geometry.addAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+        this.nodesObject.color = this.nodesObject.geometry.attributes.color.array;
+
+        this.nodesObject.geometry.addAttribute('width', new THREE.Float32BufferAttribute(width, 1));
+        this.nodesObject.width = this.nodesObject.geometry.attributes.width.array;
 
         this.nodesObject.material = sphereMaterial;
         this.nodesObject.mesh = new THREE.Mesh(this.nodesObject.geometry, this.nodesObject.material);
@@ -204,15 +212,24 @@ export default class EfficientGraph extends Graph {
 
         }
 
-        this.edgeObject = {vertices, indices, uvs, width, directions};
+        this.edgeObject = {indices};
 
         this.edgeObject.geometry = new THREE.BufferGeometry();
         this.edgeObject.geometry.setIndex(this.edgeObject.indices);
 
-        this.edgeObject.geometry.addAttribute('position', new THREE.Float32BufferAttribute(this.edgeObject.vertices, 3));
-        this.edgeObject.geometry.addAttribute('direction', new THREE.Float32BufferAttribute(this.edgeObject.directions, 3));
-        this.edgeObject.geometry.addAttribute('width', new THREE.Float32BufferAttribute(this.edgeObject.width, 1));
-        this.edgeObject.geometry.addAttribute('uv', new THREE.Float32BufferAttribute(this.edgeObject.uvs, 2));
+        this.edgeObject.geometry.addAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        this.edgeObject.position = this.edgeObject.geometry.attributes.position.array;
+
+        this.edgeObject.geometry.addAttribute('direction', new THREE.Float32BufferAttribute(directions, 3));
+        this.edgeObject.direction = this.edgeObject.geometry.attributes.direction.array;
+
+        this.edgeObject.geometry.addAttribute('width', new THREE.Float32BufferAttribute(width, 1));
+        this.edgeObject.width = this.edgeObject.geometry.attributes.width.array;
+
+        this.edgeObject.geometry.addAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+        this.edgeObject.uv = this.edgeObject.geometry.attributes.uv.array;
+
+
         this.edgeObject.material = lineMaterial;
         this.edgeObject.mesh = new THREE.Mesh(this.edgeObject.geometry, this.edgeObject.material);
 
@@ -351,6 +368,7 @@ export default class EfficientGraph extends Graph {
         this.edgeObject.geometry.attributes.width.needsUpdate = true;
         if(edgeColors) this.edgeObject.geometry.attributes.color.needsUpdate = true;
         this.nodesObject.geometry.attributes.color.needsUpdate = true;
+        this.nodesObject.geometry.attributes.width.needsUpdate = true;
     }
 
     /**

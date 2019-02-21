@@ -1,7 +1,7 @@
 //#region setup
 let displayEdges = true;
 let displayNodes = true;
-let len = 1000000;
+let len = 100000;
 const scene = new THREE.Scene();
 const renderer = new THREE.WebGLRenderer();
 
@@ -81,13 +81,31 @@ function animate(){
 }
 animate();
 
-//#region jqueryGUI
+//#region visoptions
 let NodeVisOptions = {
     func: function(node){
         let c = node.color;
+        let w = node.data1;
         if(!c){ c = new Vec3(1,1,1); }
-        return {color: c}
-    }
+
+        if(this.connected_only){
+            let edges = node.edges.filter(edge => {
+                return graph.edgeVisFunction(edge).width != 0;
+            });
+            if(edges.length == 0){
+                w = 0;
+            }    
+        }
+        if(w > this.size.max || w < this.size.min){
+            w = 0;
+        }
+        return {color: c, width: w}
+    },
+    size: {
+        min: 0,
+        max: 1
+    },
+    connected_only: false
 };
 
 let EdgeVisOptions = {
@@ -98,7 +116,10 @@ let EdgeVisOptions = {
         if(i == null || 
             ai < this.intensity.min || ai > this.intensity.max ||
             (i > 0.5 && this.intensity.sign == -1) ||
-            (i < 0.5 && this.intensity.sign == 1)
+            (i < 0.5 && this.intensity.sign == 1) ||
+            this.connected_only && (
+                graph.nodesObject.width[edge.source.gnid * 3] == 0 ||
+                graph.nodesObject.width[edge.target.gnid * 3] == 0)
         ){
         }
         else{
@@ -111,11 +132,33 @@ let EdgeVisOptions = {
         min: 0,
         max: 1,
         sign: 0
-    }
+    },
+    connected_only: false
 };
 
 graph.edgeVisFunction = EdgeVisOptions.func.bind(EdgeVisOptions);
 graph.nodeVisFunction = NodeVisOptions.func.bind(NodeVisOptions);
+
+//#endregion
+
+//#region jqueryGUI
+$( function() {
+    $( "#size-range" ).slider({
+        range: true,
+        min: 0,
+        max: 1,
+        values: [ 0, 1 ],
+        step: 0.01,
+        slide: function( event, ui ) {
+            $( "#size-amount" ).val( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
+            NodeVisOptions.size.min = ui.values[0];
+            NodeVisOptions.size.max = ui.values[1];
+            graph.updateVisDelayed(100);
+        }
+    });
+    $( "#size-amount" ).val( $( "#size-range" ).slider( "values", 0 ) + " - " + $( "#size-range" ).slider( "values", 1 ) );
+} );
+
 $( function() {
     $( "#intensity-range" ).slider({
         range: true,
@@ -132,6 +175,7 @@ $( function() {
     });
     $( "#intensity-amount" ).val( $( "#intensity-range" ).slider( "values", 0 ) + " - " + $( "#intensity-range" ).slider( "values", 1 ) );
 } );
+
 $( function() {
     $( "#intensity-sign" ).slider({
         min: -1,
@@ -228,7 +272,35 @@ document.getElementById("DISPLAY_EDGES").addEventListener('click', () => {
         element.classList.add('selected');
         graph.add(graph.edgeObject.mesh);
     }
-    displayNodes = !active;
+    displayEdges = !active;
+});
+
+document.getElementById("CONNECTED_NODES_ONLY").addEventListener('click', () => {
+    let element = document.getElementById("CONNECTED_NODES_ONLY");
+    let active = element.classList.contains('selected');
+    if(active){
+        NodeVisOptions.connected_only = false;
+        element.classList.remove('selected');
+    }
+    else{
+        NodeVisOptions.connected_only = true;
+        element.classList.add('selected');
+    }
+    graph.updateVisDelayed(100);
+});
+
+document.getElementById("CONNECTED_EDGES_ONLY").addEventListener('click', () => {
+    let element = document.getElementById("CONNECTED_EDGES_ONLY");
+    let active = element.classList.contains('selected');
+    if(active){
+        EdgeVisOptions.connected_only = false;
+        element.classList.remove('selected');
+    }
+    else{
+        EdgeVisOptions.connected_only = true;
+        element.classList.add('selected');
+    }
+    graph.updateVisDelayed(100);
 });
 
 //#endregion
