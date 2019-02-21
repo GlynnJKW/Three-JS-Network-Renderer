@@ -44,6 +44,7 @@ export default class GraphNode extends THREE.Object3D {
     constructor(name, shape="ico", info={}){
         super();
         this.edges = [];
+        this.parentEdges = [];
         if(name){
             this.name = name;
         }

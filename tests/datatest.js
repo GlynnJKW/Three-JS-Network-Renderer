@@ -1,7 +1,7 @@
 //#region setup
 let displayEdges = true;
 let displayNodes = true;
-let len = 100000;
+let len = 10000;
 const scene = new THREE.Scene();
 const renderer = new THREE.WebGLRenderer();
 
@@ -26,13 +26,13 @@ Network.Materials.lineMaterial.uniforms.screen.value.set(cv.clientWidth, window.
 let graph = new Network.EfficientGraph();
 
 
-graph.addNode({name: `n0`, position: new Network.Vec3(0,0,0), edges: []});
-for(let i = 1; i < len; ++i){
+for(let i = 0; i < len; ++i){
     let node = new Network.EfficientNode({name: `n${i}`, position: new Network.Vec3(0,0,0)});
     node.data1 = Math.random();
     node.data2 = Math.random();
     graph.addNode(node);
-    graph.addEdge(`n${i-1}`, `n${i}`);
+    if(i != 0)
+        graph.addEdge(`n${i-1}`, `n${i}`);
 }
 
 for(let e = 0; e < graph.edges.length; ++e){
@@ -65,13 +65,6 @@ controls.screenSpacePanning = true;
 
 //#endregion
 
-//#region datGUI
-
-const GUI = new dat.GUI();
-GUI.width = window.innerWidth / 4;
-let GUIOptions = [];
-//#endregion
-
 
 function animate(){
     requestAnimationFrame(animate);
@@ -82,6 +75,45 @@ function animate(){
 animate();
 
 //#region visoptions
+let _edgeMap = new Map();
+let EdgeVisOptions = {
+    func: function(edge){
+        // Set edgemap to true so that answers from connected nodes aren't polluted by previous answers
+        _edgeMap.set(edge, true);
+        let c = new Network.Vec3(0,0,0);
+
+        if(this.connected_only && 
+            (!graph.nodeVisFunction(edge.source).width ||
+            !graph.nodeVisFunction(edge.target).width)
+        ){
+            _edgeMap.set(edge, false);
+            return {color: c, width: 0};
+        }
+
+        let i = edge.intensity;
+        let ai = Math.abs(i * 2 - 1);
+        if(i == null || 
+            ai < this.intensity.min || ai > this.intensity.max ||
+            (i > 0.5 && this.intensity.sign == -1) ||
+            (i < 0.5 && this.intensity.sign == 1)
+        ){
+            _edgeMap.set(edge, false);
+            return {color: c, width: 0}
+        }
+
+        let w = Math.abs(0.5 - i) * 2;
+        c = new Network.Vec3(1 - i, i, 0);
+        _edgeMap.set(edge, w != 0);
+        return {color: c, width: w}
+    },
+    intensity: {
+        min: 0,
+        max: 1,
+        sign: 0
+    },
+    connected_only: false
+};
+
 let NodeVisOptions = {
     func: function(node){
         let c = node.color;
@@ -89,8 +121,8 @@ let NodeVisOptions = {
         if(!c){ c = new Vec3(1,1,1); }
 
         if(this.connected_only){
-            let edges = node.edges.filter(edge => {
-                return graph.edgeVisFunction(edge).width != 0;
+            let edges = node.edges.concat(node.parentEdges).filter(edge => {
+                return _edgeMap.get(edge);
             });
             if(edges.length == 0){
                 w = 0;
@@ -108,37 +140,9 @@ let NodeVisOptions = {
     connected_only: false
 };
 
-let EdgeVisOptions = {
-    func: function(edge){
-        let i = edge.intensity;
-        let ai = Math.abs(i * 2 - 1);
-        let w = 0;
-        if(i == null || 
-            ai < this.intensity.min || ai > this.intensity.max ||
-            (i > 0.5 && this.intensity.sign == -1) ||
-            (i < 0.5 && this.intensity.sign == 1) ||
-            this.connected_only && (
-                graph.nodesObject.width[edge.source.gnid * 3] == 0 ||
-                graph.nodesObject.width[edge.target.gnid * 3] == 0)
-        ){
-        }
-        else{
-            w = Math.abs(0.5 - i) * 2;
-        }
-        let c = new Network.Vec3(1 - i, i, 0);
-        return {color: c, width: w}
-    },
-    intensity: {
-        min: 0,
-        max: 1,
-        sign: 0
-    },
-    connected_only: false
-};
-
 graph.edgeVisFunction = EdgeVisOptions.func.bind(EdgeVisOptions);
 graph.nodeVisFunction = NodeVisOptions.func.bind(NodeVisOptions);
-
+graph.updateVis();
 //#endregion
 
 //#region jqueryGUI

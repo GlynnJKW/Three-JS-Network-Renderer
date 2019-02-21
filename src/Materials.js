@@ -27,7 +27,7 @@ const lineMaterial = new ShaderMaterial(
         "vertexShader": Line.vertex,
         "fragmentShader": Line.fragment,
         "side": DoubleSide,
-        "transparent": true,
+        "vertexColors": VertexColors,
         "uniforms": {
             "screen": {value: new Vector2(1920, 1080)},
             "scale": {value: 0.1},

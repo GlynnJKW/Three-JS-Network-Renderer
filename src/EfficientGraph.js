@@ -137,12 +137,7 @@ export default class EfficientGraph extends Graph {
             this.remove(this.edgeObject.mesh);
         }
 
-        let colors = null;
-        // Only use colors if edgevisfunction returns color
-        if(this.edgeVisFunction({}).color != undefined){
-            colors = new Float32Array(this.edges.length * 4 * 3);
-        }
-
+        let colors = new Float32Array(this.edges.length * 4 * 3);
         let vertices = new Float32Array(this.edges.length * 4 * 3);
         let uvs = new Float32Array(this.edges.length * 4 * 2);
         let width = new Float32Array(this.edges.length * 4);
@@ -199,11 +194,9 @@ export default class EfficientGraph extends Graph {
 
             width[i*4] = width[i*4+1] = width[i*4+2] = width[i*4+3] = info.width;
 
-            if(colors != null){
-                colors[d] = colors[d+3] = colors[d+6] = colors[d+9] = info.color.r;
-                colors[d+1] = colors[d+4] = colors[d+7] = colors[d+10] = info.color.g;
-                colors[d+2] = colors[d+5] = colors[d+8] = colors[d+11] = info.color.b;    
-            }
+            colors[d] = colors[d+3] = colors[d+6] = colors[d+9] = info.color.r;
+            colors[d+1] = colors[d+4] = colors[d+7] = colors[d+10] = info.color.g;
+            colors[d+2] = colors[d+5] = colors[d+8] = colors[d+11] = info.color.b;    
             //#endregion
 
             directions[d] = directions[d+3] = directions[d+6] = directions[d+9] = n2.position.x - n1.position.x;
@@ -229,17 +222,12 @@ export default class EfficientGraph extends Graph {
         this.edgeObject.geometry.addAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
         this.edgeObject.uv = this.edgeObject.geometry.attributes.uv.array;
 
+        this.edgeObject.geometry.addAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+        this.edgeObject.colors = this.edgeObject.geometry.attributes.color.array;
+
 
         this.edgeObject.material = lineMaterial;
-        this.edgeObject.mesh = new THREE.Mesh(this.edgeObject.geometry, this.edgeObject.material);
-
-        //If the vis function returns colors, enable colors in the shader and use them
-        if(colors != null){
-            this.edgeObject.colors = colors;
-            this.edgeObject.geometry.addAttribute('color', new THREE.Float32BufferAttribute(this.edgeObject.colors, 3));
-            this.edgeObject.material.vertexColors = THREE.VertexColors;
-        }
-        
+        this.edgeObject.mesh = new THREE.Mesh(this.edgeObject.geometry, this.edgeObject.material);        
 
         this.add(this.edgeObject.mesh);
 
@@ -312,7 +300,25 @@ export default class EfficientGraph extends Graph {
      * Update visualization data (attribute buffers) for nodes and edges
      */
     updateVis(){
-        // update node arrays first, because edge vis function can take nodes into account
+        // update edge arrays first (in case edge arrays take 'connected' into account)
+        let edgeColors = this.edgeObject.geometry.attributes.color.array;
+        let edgeWidths = this.edgeObject.geometry.attributes.width.array;
+
+        for(let i = 0, len = this.edges.length; i < len; ++i){
+            let info = this.edgeVisFunction(this.edges[i])
+
+            edgeWidths[i*4] = edgeWidths[i*4+1] = edgeWidths[i*4+2] = edgeWidths[i*4+3] = info.width;
+
+            if(edgeColors != null){
+                let d = i * 12;
+                edgeColors[d] = edgeColors[d+3] = edgeColors[d+6] = edgeColors[d+9] = info.color.r;
+                edgeColors[d+1] = edgeColors[d+4] = edgeColors[d+7] = edgeColors[d+10] = info.color.g;
+                edgeColors[d+2] = edgeColors[d+5] = edgeColors[d+8] = edgeColors[d+11] = info.color.b;    
+            }
+        }
+
+
+        // update node arrays last
         let nodeColors = this.nodesObject.geometry.attributes.color.array;
         let nodeWidths = this.nodesObject.geometry.attributes.width.array;
 
@@ -329,39 +335,6 @@ export default class EfficientGraph extends Graph {
             let d = i * 3
             nodeWidths[d] = nodeWidths[d+1] = nodeWidths[d+2] = w;
         }
-
-        // update edge arrays
-        let edgeColors = null;
-        if(this.edgeVisFunction({}).color != undefined){
-            if(this.edgeObject.geometry.attributes.color){
-                edgeColors = this.edgeObject.geometry.attributes.color.array;
-            }
-            else{
-                this.edgeObject.colors = new Float32Array(this.edges.length * 4 * 3); 
-                this.edgeObject.geometry.addAttribute('color', new THREE.Float32BufferAttribute(this.edgeObject.colors, 3));
-            }
-            this.edgeObject.material.vertexColors = THREE.VertexColors;
-        }
-        else{
-            this.edgeObject.material.vertexColors = THREE.NoColors;
-        }
-        this.edgeObject.material.needsUpdate = true;
-
-        let edgeWidths = this.edgeObject.geometry.attributes.width.array;
-        for(let i = 0, len = this.edges.length; i < len; ++i){
-            let info = this.edgeVisFunction(this.edges[i])
-
-            edgeWidths[i*4] = edgeWidths[i*4+1] = edgeWidths[i*4+2] = edgeWidths[i*4+3] = info.width;
-
-            if(edgeColors != null){
-                let d = i * 12;
-                edgeColors[d] = edgeColors[d+3] = edgeColors[d+6] = edgeColors[d+9] = info.color.r;
-                edgeColors[d+1] = edgeColors[d+4] = edgeColors[d+7] = edgeColors[d+10] = info.color.g;
-                edgeColors[d+2] = edgeColors[d+5] = edgeColors[d+8] = edgeColors[d+11] = info.color.b;    
-            }
-        }
-
-
 
 
         //set update flags
