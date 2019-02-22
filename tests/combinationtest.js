@@ -45,11 +45,7 @@ graph.directed = true;
 graph.position.set(-(layers-1)*width/2, -(nodes-1)*height/2, 0);
 graph.scale.set(width, height, 1);
 
-let graph2 = new Network.PickableGraph();
-graph2.position.copy(graph.position);
-graph2.scale.copy(graph.scale);
-
-let renderGraph = graph;
+let selected = new Map();
 
 //add nodes
 for(let layer = 0; layer < layers; ++layer){
@@ -110,11 +106,11 @@ canvas.addEventListener('dblclick', function(e){
 
 function pick(event){
     //Setup and render graph using picking material
-    renderGraph.prepareForPicking();
-    pickingScene.add(renderGraph);
+    graph.prepareForPicking();
+    pickingScene.add(graph);
     renderer.render(pickingScene, camera, pickingTexture);
-    renderGraph.revertToNormal();
-    scene.add(renderGraph);
+    graph.revertToNormal();
+    scene.add(graph);
 
     //get id and display info for selected node / remove info if blank
     let pixelBuffer = new Uint8Array(4);
@@ -124,12 +120,9 @@ function pick(event){
         currentlySelected = graph.nodes[id-1];
         setGUI(currentlySelected);
         console.log(id, pixelBuffer);
-        // console.log(graph.nodes[id-1], graph.getConnectedReverse(graph.nodes[id-1]));
     }
     else{
-        renderGraph = graph;
-        scene.remove(graph2);
-        scene.add(graph);
+        resetDisplay();
         setGUI();
     }
 }
@@ -156,46 +149,51 @@ function setGUI(node){
 }
 
 function displayAffectedNodes(){
+    selected.clear();
     let ng = graph.getConnected(currentlySelected);
-    graph2.nodes = ng.nodes;
-    graph2.edges = ng.edges;
-    graph2.setEdgeGeom();
-    graph2.setNodeGeom();
 
-    renderGraph = graph2;
-    scene.remove(graph);
-    scene.add(graph2);
+    for(let node of ng.nodes){
+        selected.set(node, true);
+    }
+    for(let edge of ng.edges){
+        selected.set(edge, true);
+    }
+
+    graph.updateVis();
 }
 
 function displayAffectingNodes(){
+    selected.clear();
     let ng = graph.getConnectedReverse(currentlySelected);
-    graph2.nodes = ng.nodes;
-    graph2.edges = ng.edges;
-    graph2.setEdgeGeom();
-    graph2.setNodeGeom();
 
-    renderGraph = graph2;
-    scene.remove(graph);
-    scene.add(graph2);
+    for(let node of ng.nodes){
+        selected.set(node, true);
+    }
+    for(let edge of ng.edges){
+        selected.set(edge, true);
+    }
+
+    graph.updateVis();
 }
 
 function displayConnectedNodes(){
+    selected.clear();
     let ng = graph.getConnected(currentlySelected);
     let ng2 = graph.getConnectedReverse(currentlySelected);
-    graph2.nodes = ng.nodes.concat(ng2.nodes);
-    graph2.edges = ng.edges.concat(ng2.edges);
-    graph2.setEdgeGeom();
-    graph2.setNodeGeom();
 
-    renderGraph = graph2;
-    scene.remove(graph);
-    scene.add(graph2);
+    for(let node of ng.nodes.concat(ng2.nodes)){
+        selected.set(node, true);
+    }
+    for(let edge of ng.edges.concat(ng2.edges)){
+        selected.set(edge, true);
+    }
+
+    graph.updateVis();
 }
 
 function resetDisplay(){
-    renderGraph = graph;
-    scene.remove(graph2);
-    scene.add(graph);
+    selected.clear();
+    graph.updateVis();
 }
 
 function minimizeCrossing(){
@@ -213,6 +211,11 @@ let EdgeVisOptions = {
         // Set edgemap to true so that answers from connected nodes aren't polluted by previous answers
         _edgeMap.set(edge, true);
         let c = new Network.Vec3(0,0,0);
+
+        if(selected.size > 0 && !selected.get(edge)){
+            _edgeMap.set(edge, false);
+            return {color: c, width: 0};
+        }
 
         if(this.connected_only && 
             (!NodeVisOptions.func(edge.source).width ||
@@ -252,6 +255,10 @@ let NodeVisOptions = {
         let w = node.data1;
         if(!c){ c = new Vec3(1,1,1); }
 
+        if(selected.size > 0 && !selected.get(node)){
+            return {color: c, width: 0};
+        }
+
         if(this.connected_only){
             let edges = node.edges.concat(node.parentEdges).filter(edge => {
                 return _edgeMap.get(edge);
@@ -275,9 +282,6 @@ let NodeVisOptions = {
 graph.edgeVisFunction = EdgeVisOptions.func.bind(EdgeVisOptions);
 graph.nodeVisFunction = NodeVisOptions.func.bind(NodeVisOptions);
 graph.updateVis();
-graph2.edgeVisFunction = EdgeVisOptions.func.bind(EdgeVisOptions);
-graph2.nodeVisFunction = NodeVisOptions.func.bind(NodeVisOptions);
-graph2.updateVis();
 //#endregion
 
 //#region jqueryGUI
@@ -293,7 +297,6 @@ $( function() {
             NodeVisOptions.size.min = ui.values[0];
             NodeVisOptions.size.max = ui.values[1];
             graph.updateVisDelayed(300);
-            graph2.updateVisDelayed(300);
         }
     });
     $( "#size-amount" ).val( $( "#size-range" ).slider( "values", 0 ) + " - " + $( "#size-range" ).slider( "values", 1 ) );
@@ -311,7 +314,6 @@ $( function() {
             EdgeVisOptions.intensity.min = ui.values[0];
             EdgeVisOptions.intensity.max = ui.values[1];
             graph.updateVisDelayed(300);
-            graph2.updateVisDelayed(300);
         }
     });
     $( "#intensity-amount" ).val( $( "#intensity-range" ).slider( "values", 0 ) + " - " + $( "#intensity-range" ).slider( "values", 1 ) );
@@ -338,7 +340,6 @@ $( function() {
             $( "#sign-label" ).val( type );
             EdgeVisOptions.intensity.sign = ui.value;
             graph.updateVisDelayed(300);
-            graph2.updateVisDelayed(300);
         }
     });
     $( "#sign-label" ).val("Any");
@@ -373,7 +374,6 @@ document.getElementById("LINE_FAKE_DEPTH").addEventListener('click', () => {
         Network.Materials.lineMaterial.defines.FAKE_DEPTH = true;
     }
     graph.edgeObject.material.needsUpdate = true;
-    graph2.edgeObject.material.needsUpdate = true;
 });
 
 document.getElementById("NODE_FAKE_DEPTH").addEventListener('click', () => {
@@ -388,7 +388,6 @@ document.getElementById("NODE_FAKE_DEPTH").addEventListener('click', () => {
         Network.Materials.sphereMaterial.defines.FAKE_DEPTH = true;
     }
     graph.nodesObject.material.needsUpdate = true;
-    graph2.edgeObject.material.needsUpdate = true;
 });
 
 document.getElementById("DISPLAY_NODES").addEventListener('click', () => {
@@ -396,13 +395,11 @@ document.getElementById("DISPLAY_NODES").addEventListener('click', () => {
     let active = element.classList.contains('selected');
     if(active){
         graph.remove(graph.nodesObject.mesh);
-        graph2.remove(graph.nodesObject.mesh);
         element.classList.remove('selected');
     }
     else{
         element.classList.add('selected');
         graph.add(graph.nodesObject.mesh);
-        graph2.add(graph.nodesObject.mesh);
     }
     displayNodes = !active;
 });
@@ -412,13 +409,11 @@ document.getElementById("DISPLAY_EDGES").addEventListener('click', () => {
     let active = element.classList.contains('selected');
     if(active){
         graph.remove(graph.edgeObject.mesh);
-        graph2.remove(graph.edgeObject.mesh);
         element.classList.remove('selected');
     }
     else{
         element.classList.add('selected');
         graph.add(graph.edgeObject.mesh);
-        graph2.add(graph.edgeObject.mesh);
     }
     displayEdges = !active;
 });
@@ -435,7 +430,6 @@ document.getElementById("CONNECTED_NODES_ONLY").addEventListener('click', () => 
         element.classList.add('selected');
     }
     graph.updateVisDelayed(100);
-    graph2.updateVisDelayed(100);
 });
 
 document.getElementById("CONNECTED_EDGES_ONLY").addEventListener('click', () => {
@@ -450,7 +444,6 @@ document.getElementById("CONNECTED_EDGES_ONLY").addEventListener('click', () => 
         element.classList.add('selected');
     }
     graph.updateVisDelayed(100);
-    graph2.updateVisDelayed(100);
 });
 
 //#endregion

@@ -4,21 +4,27 @@ import Vec3 from './Vec3';
 
 export default class LayeredGraph extends PickableGraph{
 
-    constructor(numLayers, nodesPerLayer){
+    constructor(numLayers, nodesPerLayer, createOnStartup=true){
         super(...arguments);
         this.directed = true;
         this.layout = [];
         this.nodesPerLayer = nodesPerLayer;
         this.numLayers = numLayers;
-        for(let i = 0; i < numLayers; ++i){
-            this.layout.push([]);
-
-            for(let j = 0; j < nodesPerLayer; ++j){
-                let node = new EfficientNode({name: `l${i}n${j}`, position: new Vec3(i, j, 0)});
-                this.layout[i][j] = node;
-                this.addNode(node);
+        if(createOnStartup){
+            for(let i = 0; i < numLayers; ++i){
+                this.layout.push([]);
+    
+                for(let j = 0; j < nodesPerLayer; ++j){
+                    let node = new EfficientNode({name: `l${i}n${j}`, position: new Vec3(i, j, 0)});
+                    this.addNode(node, i, j);
+                }
             }
         }
+    }
+
+    addNode(node, layer, position){
+        this.layout[layer][position] = node;
+        super.addNode(node);
     }
 
     oscm(num = 100){
