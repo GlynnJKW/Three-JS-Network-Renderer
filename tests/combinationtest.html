@@ -6,7 +6,7 @@
 		<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 		<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 		<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-		<link rel="stylesheet" href="./css/datatest.css">
+		<link rel="stylesheet" href="../css/datatest.css">
 	</head>
 	<body>
 		<div id="canvas"></div>
@@ -45,7 +45,7 @@
 				</li>
 			</ul>
 		</div>
-		<script src="./stats.min.js"></script>
+		<script src="../src/dependencies/stats.min.js"></script>
 		<script>
 			var stats = new Stats();
 			document.body.appendChild( stats.dom );
@@ -59,8 +59,8 @@
 
 			requestAnimationFrame( loop );
 		</script>
-		<script src="src/dependencies/dat.gui.min.js"></script>
-		<script src="dist/network.bundle.js"></script>
-		<script src="./tests/combinationtest.js"></script>
+		<script src="../src/dependencies/dat.gui.min.js"></script>
+		<script src="../dist/network.bundle.js"></script>
+		<script src="./combinationtest.js"></script>
 	</body>
 </html>

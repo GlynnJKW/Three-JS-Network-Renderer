@@ -3,7 +3,7 @@
 	<head>
 		<meta charset=utf-8>
 		<title>Stress test</title>
-		<link rel="stylesheet" href="./css/stresstest.css">
+		<link rel="stylesheet" href="../css/stresstest.css">
 	</head>
 	<body>
 		<div id="canvas"></div>
@@ -17,7 +17,7 @@
 				<li id="DISPLAY_EDGES" class="selected">Display edges - </li>
 			</ul>
 		</div>
-		<script src="./stats.min.js"></script>
+		<script src="../src/dependencies/stats.min.js"></script>
 		<script>
 			var stats = new Stats();
 			document.body.appendChild( stats.dom );
@@ -31,9 +31,9 @@
 
 			requestAnimationFrame( loop );
 		</script>
-        <script src="src/dependencies/jquery.min.js"></script>
-		<script src="src/dependencies/dat.gui.min.js"></script>
-		<script src="dist/network.bundle.js"></script>
-		<script src="./tests/stresstest.js"></script>
+        <script src="../src/dependencies/jquery.min.js"></script>
+		<script src="../src/dependencies/dat.gui.min.js"></script>
+		<script src="../dist/network.bundle.js"></script>
+		<script src="./stresstest.js"></script>
 	</body>
 </html>
