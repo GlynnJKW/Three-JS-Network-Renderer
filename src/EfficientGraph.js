@@ -114,19 +114,11 @@ export default class EfficientGraph extends Graph {
             let update = [pos.x, pos.y, pos.z];
 
             for(let j = 0; j < 9; ++j){
-                this.nodesObject.vertices[bind + j] = update[j % 3];
-            }
-
-            let col = this.nodes[i].color;
-            if(col){
-                let updatecolor = [col.r, col.g, col.b];
-                for(let j = 0; j < 9; ++j){
-                    this.nodesObject.colors[bind + j] = updatecolor[j % 3];
-                }
+                this.nodesObject.position[bind + j] = update[j % 3];
             }
         }
 
-        this.nodesObject.geometry.addAttribute('position', new THREE.Float32BufferAttribute(this.nodesObject.vertices, 3));
+        this.nodesObject.geometry.attributes.position.needsUpdate = true;
     }
 
     /**
@@ -238,25 +230,7 @@ export default class EfficientGraph extends Graph {
      */
     updateEdgeGeom(){
         //Update vertices array size if necessary
-        let vertices;
-        if(this.edgeObject.vertices.length != this.edges.length * 4 * 3){
-            vertices = new Float32Array(this.edges.length * 4 * 3);
-            this.edgeObject.geometry.addAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-        }
-        vertices = this.edgeObject.geometry.attributes.position.array;
-
-        //update colors buffer and array size if necessary
-        if(this.edgeObject.width.length != this.edges.length * 4){
-            this.edgeObject.width = new Float32Array(this.edges.length * 4);
-            this.edgeObject.width.fill(0);
-            this.edgeObject.geometry.addAttribute('width', new THREE.Float32BufferAttribute(this.edgeObject.width, 1)); 
-        }
-        let width = this.edgeObject.geometry.attributes.width.array;
-
-        if(this.edgeObject.directions.length != this.edges.length * 4){
-            this.edgeObject.directions = new Float32Array(this.edges.length * 4 * 3);
-            this.edgeObject.geometry.addAttribute('direction', new THREE.Float32BufferAttribute(this.edgeObject.directions, 3));
-        }
+        let position = this.edgeObject.geometry.attributes.position.array;
         let directions = this.edgeObject.geometry.attributes.direction.array;
 
 
@@ -270,14 +244,14 @@ export default class EfficientGraph extends Graph {
 
             let v = i * 4;
 
-            vertices[v*3] = vertices[v*3+3] = n1.position.x;
-            vertices[v*3+1] = vertices[v*3+4] = n1.position.y;
-            vertices[v*3+2] = vertices[v*3+5] = n1.position.z;
+            position[v*3] = position[v*3+3] = n1.position.x;
+            position[v*3+1] = position[v*3+4] = n1.position.y;
+            position[v*3+2] = position[v*3+5] = n1.position.z;
 
             v += 2;
-            vertices[v*3] = vertices[v*3+3] = n2.position.x;
-            vertices[v*3+1] = vertices[v*3+4] = n2.position.y;
-            vertices[v*3+2] = vertices[v*3+5] = n2.position.z;
+            position[v*3] = position[v*3+3] = n2.position.x;
+            position[v*3+1] = position[v*3+4] = n2.position.y;
+            position[v*3+2] = position[v*3+5] = n2.position.z;
 
 
             let d = i * 12;
@@ -287,12 +261,7 @@ export default class EfficientGraph extends Graph {
         }
 
         //update buffer
-        this.edgeObject.vertices = vertices;
-        this.edgeObject.directions = directions;
-        this.edgeObject.width = width;
-
         this.edgeObject.geometry.attributes.position.needsUpdate = true;
-        this.edgeObject.geometry.attributes.width.needsUpdate = true;
         this.edgeObject.geometry.attributes.direction.needsUpdate = true;
     }
 
@@ -300,48 +269,52 @@ export default class EfficientGraph extends Graph {
      * Update visualization data (attribute buffers) for nodes and edges
      */
     updateVis(){
-        // update edge arrays first (in case edge arrays take 'connected' into account)
-        let edgeColors = this.edgeObject.geometry.attributes.color.array;
-        let edgeWidths = this.edgeObject.geometry.attributes.width.array;
+        if(this.edgeObject){
+            // update edge arrays first (in case edge arrays take 'connected' into account)
+            let edgeColors = this.edgeObject.geometry.attributes.color.array;
+            let edgeWidths = this.edgeObject.geometry.attributes.width.array;
 
-        for(let i = 0, len = this.edges.length; i < len; ++i){
-            let info = this.edgeVisFunction(this.edges[i])
+            for(let i = 0, len = this.edges.length; i < len; ++i){
+                let info = this.edgeVisFunction(this.edges[i])
 
-            edgeWidths[i*4] = edgeWidths[i*4+1] = edgeWidths[i*4+2] = edgeWidths[i*4+3] = info.width;
+                edgeWidths[i*4] = edgeWidths[i*4+1] = edgeWidths[i*4+2] = edgeWidths[i*4+3] = info.width;
 
-            if(edgeColors != null){
-                let d = i * 12;
-                edgeColors[d] = edgeColors[d+3] = edgeColors[d+6] = edgeColors[d+9] = info.color.r;
-                edgeColors[d+1] = edgeColors[d+4] = edgeColors[d+7] = edgeColors[d+10] = info.color.g;
-                edgeColors[d+2] = edgeColors[d+5] = edgeColors[d+8] = edgeColors[d+11] = info.color.b;    
+                if(edgeColors != null){
+                    let d = i * 12;
+                    edgeColors[d] = edgeColors[d+3] = edgeColors[d+6] = edgeColors[d+9] = info.color.r;
+                    edgeColors[d+1] = edgeColors[d+4] = edgeColors[d+7] = edgeColors[d+10] = info.color.g;
+                    edgeColors[d+2] = edgeColors[d+5] = edgeColors[d+8] = edgeColors[d+11] = info.color.b;    
+                }
             }
+
+            this.edgeObject.geometry.attributes.width.needsUpdate = true;
+            this.edgeObject.geometry.attributes.color.needsUpdate = true;    
         }
 
 
         // update node arrays last
-        let nodeColors = this.nodesObject.geometry.attributes.color.array;
-        let nodeWidths = this.nodesObject.geometry.attributes.width.array;
+        if(this.nodesObject){
+            let nodeColors = this.nodesObject.geometry.attributes.color.array;
+            let nodeWidths = this.nodesObject.geometry.attributes.width.array;
+    
+            for(let i = 0, len = this.nodes.length; i < len; ++i){
+                let info = (this.nodeVisFunction(this.nodes[i]));
+                let col = info.color;
+                let w = info.width;
+    
+                let c = i * 9;
+                nodeColors[c] = nodeColors[c+3] = nodeColors[c+6] = col.r;
+                nodeColors[c+1] = nodeColors[c+4] = nodeColors[c+7] = col.g;
+                nodeColors[c+2] = nodeColors[c+5] = nodeColors[c+8] = col.b;
+    
+                let d = i * 3
+                nodeWidths[d] = nodeWidths[d+1] = nodeWidths[d+2] = w;
+            }
 
-        for(let i = 0, len = this.nodes.length; i < len; ++i){
-            let info = (this.nodeVisFunction(this.nodes[i]));
-            let col = info.color;
-            let w = info.width;
-
-            let c = i * 9;
-            nodeColors[c] = nodeColors[c+3] = nodeColors[c+6] = col.r;
-            nodeColors[c+1] = nodeColors[c+4] = nodeColors[c+7] = col.g;
-            nodeColors[c+2] = nodeColors[c+5] = nodeColors[c+8] = col.b;
-
-            let d = i * 3
-            nodeWidths[d] = nodeWidths[d+1] = nodeWidths[d+2] = w;
+            this.nodesObject.geometry.attributes.color.needsUpdate = true;
+            this.nodesObject.geometry.attributes.width.needsUpdate = true;    
         }
 
-
-        //set update flags
-        this.edgeObject.geometry.attributes.width.needsUpdate = true;
-        if(edgeColors) this.edgeObject.geometry.attributes.color.needsUpdate = true;
-        this.nodesObject.geometry.attributes.color.needsUpdate = true;
-        this.nodesObject.geometry.attributes.width.needsUpdate = true;
     }
 
     /**

@@ -1,3 +1,7 @@
+/**
+ * Deprecated. Use SELECTION_BUFFER preprocessor in sphere shader instead
+ */
+
 const vertex = 
     `
     varying vec2 fraguv;

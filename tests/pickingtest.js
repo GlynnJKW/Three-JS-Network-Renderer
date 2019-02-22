@@ -1,3 +1,8 @@
+const nodes = 20;
+const layers = 50;
+const width = 5;
+const height = 5;
+
 //#region setup
 const scene = new THREE.Scene();
 const renderer = new THREE.WebGLRenderer({
@@ -25,20 +30,11 @@ Network.Materials.sphereMaterial.uniforms.screen.value.set(cv.clientWidth, windo
 Network.Materials.lineMaterial.uniforms.screen.value.set(cv.clientWidth, window.innerHeight);
 
 
-
 let currentlySelected = null;
 const GUI = new dat.GUI();
 GUI.width = cv.clientWidth / 4;
 let GUIOptions = [];
 GUIOptions.push(GUI.add(window, 'minimizeCrossing'));
-
-const nodes = 20;
-const layers = 40;
-const width = 5;
-const height = 5;
-
-
-
 
 
 let graph = new Network.LayeredGraph(layers, nodes);
@@ -62,7 +58,6 @@ for(let layer = 0; layer < layers; ++layer){
 }
 
 
-
 for(let e = 0; e < graph.edges.length; ++e){
     let intensity = Math.round(Math.random());
     graph.edges[e].intensity = intensity;
@@ -76,14 +71,8 @@ for(let n = 0; n < graph.nodes.length; ++n){
 
 graph.setEdgeGeom();
 graph.setNodeGeom();
-
-
 scene.add(graph);
-// scene.add( new THREE.GridHelper(10, 10) );
-// scene.add( new THREE.AxesHelper(10) );
-// let gridhelp = new THREE.GridHelper(10, 10);
-// gridhelp.lookAt(new THREE.Vector3(0,1,0));
-// scene.add(gridhelp);
+
 
 camera.position.set(0,0,50);
 
@@ -108,7 +97,7 @@ let pickingTexture = new THREE.WebGLRenderTarget(renderer.getSize().width, rende
 // pickingTexture.texture.minFilter = THREE.LinearFilter;
 let canvas = document.querySelector('canvas');
 
-canvas.addEventListener('click', function(e){
+canvas.addEventListener('dblclick', function(e){
     pick(e);
 });
 
@@ -128,7 +117,7 @@ function pick(event){
         currentlySelected = graph.nodes[id-1];
         setGUI(currentlySelected);
         console.log(id, pixelBuffer);
-        console.log(graph.nodes[id-1], graph.getConnectedReverse(graph.nodes[id-1]));
+        // console.log(graph.nodes[id-1], graph.getConnectedReverse(graph.nodes[id-1]));
     }
     else{
         renderGraph = graph;

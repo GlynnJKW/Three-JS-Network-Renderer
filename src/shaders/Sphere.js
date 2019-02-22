@@ -69,15 +69,20 @@ const fragment =
         if(rad > 1.0){
             discard;
         }
-        gl_FragColor = vec4(test.rgb * pow((1.0 - rad), 0.5), 1);
+        
+        #ifdef SELECTION_BUFFER
+            gl_FragColor = vec4(test.rgb, 1);
+        #else
+            gl_FragColor = vec4(test.rgb * pow((1.0 - rad), 0.5), 1);
+        #endif
 
-#ifdef FAKE_DEPTH
-        float d = trueDepth(gl_FragCoord.z);
-        float z = sqrt(1.0 - rad); // y^2 + z^2 = 1 > z = sqrt(1 - y^2)
-        d = max(d - z * (radius / 100.0), near * 1.01);
-        float fd = fakeDepth(d);
-        gl_FragDepthEXT = fd; 
-#endif    
+        #ifdef FAKE_DEPTH
+            float d = trueDepth(gl_FragCoord.z);
+            float z = sqrt(1.0 - rad); // y^2 + z^2 = 1 > z = sqrt(1 - y^2)
+            d = max(d - z * (radius / 100.0), near * 1.01);
+            float fd = fakeDepth(d);
+            gl_FragDepthEXT = fd; 
+        #endif    
     }
     `;
 

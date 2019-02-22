@@ -1,9 +1,16 @@
-//#region setup
 let displayEdges = true;
 let displayNodes = true;
-let len = 200000;
+const nodes = 20;
+const layers = 40;
+const width = 5;
+const height = 5;
+
+
+//#region setup
 const scene = new THREE.Scene();
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer({
+    antialias: true
+});
 
 const cv = document.getElementById('canvas')
 let camera = new THREE.PerspectiveCamera( 75, cv.clientWidth / window.innerHeight, 0.1, 1000 );
@@ -23,46 +30,60 @@ window.addEventListener('resize', () => {
 Network.Materials.sphereMaterial.uniforms.screen.value.set(cv.clientWidth, window.innerHeight);
 Network.Materials.lineMaterial.uniforms.screen.value.set(cv.clientWidth, window.innerHeight);
 
-let graph = new Network.EfficientGraph();
 
 
-for(let i = 0; i < len; ++i){
-    let node = new Network.EfficientNode({name: `n${i}`, position: new Network.Vec3(0,0,0)});
-    node.data1 = Math.random();
-    node.data2 = Math.random();
-    graph.addNode(node);
-    if(i != 0)
-        graph.addEdge(`n${i-1}`, `n${i}`);
+let currentlySelected = null;
+const GUI = new dat.GUI();
+GUI.width = cv.clientWidth / 4;
+let GUIOptions = [];
+GUIOptions.push(GUI.add(window, 'minimizeCrossing'));
+
+
+
+let graph = new Network.LayeredGraph(layers, nodes);
+graph.directed = true;
+graph.position.set(-(layers-1)*width/2, -(nodes-1)*height/2, 0);
+graph.scale.set(width, height, 1);
+
+let graph2 = new Network.PickableGraph();
+graph2.position.copy(graph.position);
+graph2.scale.copy(graph.scale);
+
+let renderGraph = graph;
+
+//add nodes
+for(let layer = 0; layer < layers; ++layer){
+    for(let e = 0; e < nodes * 1.5; ++e){
+        let src = Math.floor(Math.random() * nodes);
+        let tgt = Math.floor(Math.random() * nodes);
+        graph.addEdge(`l${layer-1}n${src}`, `l${layer}n${tgt}`);
+    }
 }
 
-for(let e = 0; e < graph.edges.length; ++e){
-    graph.edges[e].intensity = Math.random();
-    graph.edges[e].data1 = Math.random();
 
+for(let e = 0; e < graph.edges.length; ++e){
+    let intensity = Math.random();
+    graph.edges[e].intensity = intensity;
 }
 
 for(let n = 0; n < graph.nodes.length; ++n){
     let intensity = Math.random();
     let col = new Network.Vec3(1, 0.65, 0).multiplyScalar(1 - intensity).add(new Network.Vec3(0, 0, 1).multiplyScalar(intensity));
     graph.nodes[n].color = col;
+    graph.nodes[n].data1 = Math.abs(0.5 - intensity) * 2;
 }
 
-graph.AddFidget();
 graph.setEdgeGeom();
 graph.setNodeGeom();
-if(!displayEdges){
-    graph.remove(graph.edgeObject.mesh);
-}
-if(!displayNodes){
-    graph.remove(graph.nodesObject.mesh);
-}
+
+
 scene.add(graph);
+
 
 camera.position.z = 50;
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.screenSpacePanning = true;
-
 //#endregion
 
 
@@ -74,6 +95,117 @@ function animate(){
 }
 animate();
 
+
+//#region selection buffer
+const w = window.innerHeight;
+const h = cv.clientWidth;
+let pickingScene = new THREE.Scene();
+let pickingTexture = new THREE.WebGLRenderTarget(renderer.getSize().width, renderer.getSize().height);
+// pickingTexture.texture.minFilter = THREE.LinearFilter;
+let canvas = document.querySelector('canvas');
+
+canvas.addEventListener('dblclick', function(e){
+    pick(e);
+});
+
+function pick(event){
+    //Setup and render graph using picking material
+    renderGraph.prepareForPicking();
+    pickingScene.add(renderGraph);
+    renderer.render(pickingScene, camera, pickingTexture);
+    renderGraph.revertToNormal();
+    scene.add(renderGraph);
+
+    //get id and display info for selected node / remove info if blank
+    let pixelBuffer = new Uint8Array(4);
+    renderer.readRenderTargetPixels(pickingTexture, event.clientX, pickingTexture.height - event.clientY, 1, 1, pixelBuffer);
+    let id = (pixelBuffer[0]<<16)|(pixelBuffer[1]<<8)|(pixelBuffer[2]);
+    if(id){
+        currentlySelected = graph.nodes[id-1];
+        setGUI(currentlySelected);
+        console.log(id, pixelBuffer);
+        // console.log(graph.nodes[id-1], graph.getConnectedReverse(graph.nodes[id-1]));
+    }
+    else{
+        renderGraph = graph;
+        scene.remove(graph2);
+        scene.add(graph);
+        setGUI();
+    }
+}
+//#endregion
+
+
+//#region datGUI
+function setGUI(node){
+    console.log(node);
+    for(let pop of GUIOptions){
+        GUI.remove(pop);
+    }
+    GUIOptions = [];
+    if(node){
+        GUIOptions.push(GUI.add(node, 'name'));
+        GUIOptions.push(GUI.add(window, 'displayAffectedNodes'));
+        GUIOptions.push(GUI.add(window, 'displayAffectingNodes'));
+        GUIOptions.push(GUI.add(window, 'displayConnectedNodes'));
+        GUIOptions.push(GUI.add(window, 'resetDisplay'));
+    }
+    else{
+        GUIOptions.push(GUI.add(window, 'minimizeCrossing'));
+    }
+}
+
+function displayAffectedNodes(){
+    let ng = graph.getConnected(currentlySelected);
+    graph2.nodes = ng.nodes;
+    graph2.edges = ng.edges;
+    graph2.setEdgeGeom();
+    graph2.setNodeGeom();
+
+    renderGraph = graph2;
+    scene.remove(graph);
+    scene.add(graph2);
+}
+
+function displayAffectingNodes(){
+    let ng = graph.getConnectedReverse(currentlySelected);
+    graph2.nodes = ng.nodes;
+    graph2.edges = ng.edges;
+    graph2.setEdgeGeom();
+    graph2.setNodeGeom();
+
+    renderGraph = graph2;
+    scene.remove(graph);
+    scene.add(graph2);
+}
+
+function displayConnectedNodes(){
+    let ng = graph.getConnected(currentlySelected);
+    let ng2 = graph.getConnectedReverse(currentlySelected);
+    graph2.nodes = ng.nodes.concat(ng2.nodes);
+    graph2.edges = ng.edges.concat(ng2.edges);
+    graph2.setEdgeGeom();
+    graph2.setNodeGeom();
+
+    renderGraph = graph2;
+    scene.remove(graph);
+    scene.add(graph2);
+}
+
+function resetDisplay(){
+    renderGraph = graph;
+    scene.remove(graph2);
+    scene.add(graph);
+}
+
+function minimizeCrossing(){
+    graph.oscm();
+    graph.updateNodeGeom();
+    graph.updateEdgeGeom();
+}
+//#endregion
+
+
 //#region visoptions
 let _edgeMap = new Map();
 let EdgeVisOptions = {
@@ -83,8 +215,8 @@ let EdgeVisOptions = {
         let c = new Network.Vec3(0,0,0);
 
         if(this.connected_only && 
-            (!graph.nodeVisFunction(edge.source).width ||
-            !graph.nodeVisFunction(edge.target).width)
+            (!NodeVisOptions.func(edge.source).width ||
+            !NodeVisOptions.func(edge.target).width)
         ){
             _edgeMap.set(edge, false);
             return {color: c, width: 0};
@@ -143,6 +275,9 @@ let NodeVisOptions = {
 graph.edgeVisFunction = EdgeVisOptions.func.bind(EdgeVisOptions);
 graph.nodeVisFunction = NodeVisOptions.func.bind(NodeVisOptions);
 graph.updateVis();
+graph2.edgeVisFunction = EdgeVisOptions.func.bind(EdgeVisOptions);
+graph2.nodeVisFunction = NodeVisOptions.func.bind(NodeVisOptions);
+graph2.updateVis();
 //#endregion
 
 //#region jqueryGUI
@@ -158,6 +293,7 @@ $( function() {
             NodeVisOptions.size.min = ui.values[0];
             NodeVisOptions.size.max = ui.values[1];
             graph.updateVisDelayed(300);
+            graph2.updateVisDelayed(300);
         }
     });
     $( "#size-amount" ).val( $( "#size-range" ).slider( "values", 0 ) + " - " + $( "#size-range" ).slider( "values", 1 ) );
@@ -175,6 +311,7 @@ $( function() {
             EdgeVisOptions.intensity.min = ui.values[0];
             EdgeVisOptions.intensity.max = ui.values[1];
             graph.updateVisDelayed(300);
+            graph2.updateVisDelayed(300);
         }
     });
     $( "#intensity-amount" ).val( $( "#intensity-range" ).slider( "values", 0 ) + " - " + $( "#intensity-range" ).slider( "values", 1 ) );
@@ -201,6 +338,7 @@ $( function() {
             $( "#sign-label" ).val( type );
             EdgeVisOptions.intensity.sign = ui.value;
             graph.updateVisDelayed(300);
+            graph2.updateVisDelayed(300);
         }
     });
     $( "#sign-label" ).val("Any");
@@ -235,6 +373,7 @@ document.getElementById("LINE_FAKE_DEPTH").addEventListener('click', () => {
         Network.Materials.lineMaterial.defines.FAKE_DEPTH = true;
     }
     graph.edgeObject.material.needsUpdate = true;
+    graph2.edgeObject.material.needsUpdate = true;
 });
 
 document.getElementById("NODE_FAKE_DEPTH").addEventListener('click', () => {
@@ -249,6 +388,7 @@ document.getElementById("NODE_FAKE_DEPTH").addEventListener('click', () => {
         Network.Materials.sphereMaterial.defines.FAKE_DEPTH = true;
     }
     graph.nodesObject.material.needsUpdate = true;
+    graph2.edgeObject.material.needsUpdate = true;
 });
 
 document.getElementById("DISPLAY_NODES").addEventListener('click', () => {
@@ -256,11 +396,13 @@ document.getElementById("DISPLAY_NODES").addEventListener('click', () => {
     let active = element.classList.contains('selected');
     if(active){
         graph.remove(graph.nodesObject.mesh);
+        graph2.remove(graph.nodesObject.mesh);
         element.classList.remove('selected');
     }
     else{
         element.classList.add('selected');
         graph.add(graph.nodesObject.mesh);
+        graph2.add(graph.nodesObject.mesh);
     }
     displayNodes = !active;
 });
@@ -270,11 +412,13 @@ document.getElementById("DISPLAY_EDGES").addEventListener('click', () => {
     let active = element.classList.contains('selected');
     if(active){
         graph.remove(graph.edgeObject.mesh);
+        graph2.remove(graph.edgeObject.mesh);
         element.classList.remove('selected');
     }
     else{
         element.classList.add('selected');
         graph.add(graph.edgeObject.mesh);
+        graph2.add(graph.edgeObject.mesh);
     }
     displayEdges = !active;
 });
@@ -291,6 +435,7 @@ document.getElementById("CONNECTED_NODES_ONLY").addEventListener('click', () => 
         element.classList.add('selected');
     }
     graph.updateVisDelayed(100);
+    graph2.updateVisDelayed(100);
 });
 
 document.getElementById("CONNECTED_EDGES_ONLY").addEventListener('click', () => {
@@ -305,6 +450,7 @@ document.getElementById("CONNECTED_EDGES_ONLY").addEventListener('click', () => 
         element.classList.add('selected');
     }
     graph.updateVisDelayed(100);
+    graph2.updateVisDelayed(100);
 });
 
 //#endregion

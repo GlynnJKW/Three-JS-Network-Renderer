@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import EfficientGraph from './EfficientGraph';
-import { sphereMaterial, pickingSphereMaterial } from './Materials';
 
 /**
  * @extends EfficientGraph
@@ -15,9 +14,18 @@ export default class PickableGraph extends EfficientGraph{
         }
 
         if(this.nodesObject && this.nodesObject.mesh){
-            this._savedMaterial = this.nodesObject.mesh.material
-            this.nodesObject.mesh.material = pickingSphereMaterial;
+            this.nodesObject.mesh.material.defines.SELECTION_BUFFER = true;
+            this.nodesObject.mesh.material.needsUpdate = true;
         }
+
+        // Modify visualization function so that the color of the node is = to its id
+        this._savedFunction = this.nodeVisFunction;
+        this.nodeVisFunction = (node) => {
+            let info = this._savedFunction(node);
+            info.color = new THREE.Color().setHex(node.gnid + 1);
+            return info;
+        }
+        this.updateVis();
     }
 
     /**
@@ -29,29 +37,11 @@ export default class PickableGraph extends EfficientGraph{
         }
 
         if(this.nodesObject && this.nodesObject.mesh){
-            this.nodesObject.mesh.material = this._savedMaterial;
+            this.nodesObject.mesh.material.defines.SELECTION_BUFFER = false;
+            this.nodesObject.mesh.material.needsUpdate = true;
         }
-    }
 
-    setNodeGeom(){
-        super.setNodeGeom();
-        let ids = [];
-        let color = new THREE.Color();
-        for(let i = 0; i < this.nodes.length; ++i){
-            let rgb = color.setHex(this.nodes[i].gnid + 1);
-            ids.push(rgb.r, rgb.g, rgb.b);
-            ids.push(rgb.r, rgb.g, rgb.b);
-            ids.push(rgb.r, rgb.g, rgb.b);
-        }
-        this.nodesObject.ids = ids;
-        this.nodesObject.geometry.addAttribute('colorid', new THREE.Float32BufferAttribute(this.nodesObject.ids, 3));
-    }
-
-    updateNodeGeom(){
-        super.updateNodeGeom();
-        if(this.nodesObject.ids.length != this.nodesObject.vertices.length){
-            //update
-        }
-        this.nodesObject.geometry.attributes.colorid.needsUpdate = true;
+        this.nodeVisFunction = this._savedFunction;
+        this.updateVis();
     }
 }

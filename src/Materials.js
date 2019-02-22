@@ -1,4 +1,4 @@
-import { Sphere, Line, PickingSphere } from './shaders';
+import { Sphere, Line } from './shaders';
 import { ShaderMaterial, Vector2, Vector3, DoubleSide, VertexColors } from 'three';
 
 const sphereMaterial = new ShaderMaterial(
@@ -17,7 +17,7 @@ const sphereMaterial = new ShaderMaterial(
             fragDepth: true
         },
         "defines": {
-            FAKE_DEPTH: true
+            FAKE_DEPTH: true,
         }
     }
 );
@@ -44,20 +44,4 @@ const lineMaterial = new ShaderMaterial(
     }
 );
 
-const pickingSphereMaterial = new ShaderMaterial(
-    {
-        "vertexShader": PickingSphere.vertex,
-        "fragmentShader": PickingSphere.fragment,
-        "side": DoubleSide,
-        "vertexColors": VertexColors,
-        "uniforms": {
-            "screen": {value: new Vector2(1920, 1080)},
-            "radius": {value: 100}
-        },
-        "defines": {
-            FAKE_DEPTH: true
-        }
-    }
-);
-
-export { sphereMaterial, lineMaterial, pickingSphereMaterial }
+export { sphereMaterial, lineMaterial }
