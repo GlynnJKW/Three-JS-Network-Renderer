@@ -4,12 +4,13 @@ import { Vec3 } from '.';
     /**
      * @typedef {Object} NodeVisInfo
      * @property {Vec3} color - the color to render the node as
+     * @property {number} width - the width of the node
      */
 
     /**
      * @typedef {Object} EdgeVisInfo
      * @property {Vec3} color - the color to render the edge as
-     * @property {number} intensity - the weight of the edge
+     * @property {number} width - the weight of the edge
      */
 //#endregion
 
@@ -21,22 +22,7 @@ import { Vec3 } from '.';
 function StandardNodeVisFunction(node){
     let c = node.color;
     if(!c){ c = new Vec3(1,1,1); }
-    return {color: c}
-}
-
-/**
- * Default visualization function
- * @param {GraphEdge} edge 
- * @return {EdgeVisInfo} 
- */
-function StandardEdgeVisFunction(edge){
-    let c = edge.color;
-    if(!c){ c = new Vec3(1,1,1); }
-    let i = edge.intensity;
-    if(i == null){
-        i = 0.5;
-    }
-    return {color: c, intensity: i}
+    return {color: c, width: 1}
 }
 
 /**
@@ -44,13 +30,14 @@ function StandardEdgeVisFunction(edge){
  * @param {GraphEdge} edge 
  * @return {EdgeVisInfo} the visual info
  */
-function RedGreenEdgeVisFunction(edge){
+function StandardEdgeVisFunction(edge){
     let i = edge.intensity;
-    if(i == null){
-        i = 0.5;
+    let w = 0;
+    if(i != null){
+        w = Math.abs(0.5 - i) * 2;
     }
     let c = new Vec3(1 - i, i, 0);
-    return {color: c, intensity: i}
+    return {color: c, width: w}
 }
 
 export { StandardNodeVisFunction, StandardEdgeVisFunction, RedGreenEdgeVisFunction }

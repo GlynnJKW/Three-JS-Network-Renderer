@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8>
+		<title>Combination test</title>
+		<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+		<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+		<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+		<link rel="stylesheet" href="../css/datatest.css">
+	</head>
+	<body>
+		<div id="canvas"></div>
+		<div id="options">
+			<h2>Options</h2>
+			<ul>
+				<li id="LINE_CLIP_SPACE" class="bool">Line shader: screen space - </li>
+				<li id="LINE_FAKE_DEPTH" class="bool selected">Line shader: fake depth - </li>
+				<li id="NODE_FAKE_DEPTH" class="bool selected">Node shader: fake depth - </li>
+				<li id="DISPLAY_NODES" class="bool selected">Display nodes - </li>
+				<li id="DISPLAY_EDGES" class="bool selected">Display edges - </li>
+				<li id="CONNECTED_NODES_ONLY" class="bool">Display connected nodes only - </li>
+				<li id="CONNECTED_EDGES_ONLY" class="bool">Display connected edges only - </li>
+			</ul>
+			<ul>
+				<li>
+					<p>
+						<label for="size-amount">Node size range:</label>
+						<input type="text" id="size-amount" readonly style="border:none;">
+					</p>
+					<div id="size-range" style="margin: 0 5%"></div>
+				</li>
+				<li>
+					<p>
+						<label for="intensity-amount">Edge size range:</label>
+						<input type="text" id="intensity-amount" readonly style="border:none;">
+					</p>
+					<div id="intensity-range" style="margin: 0 5%"></div>
+				</li>
+				<li>
+					<p>
+						<label for="sign-label">Edge sign:</label>
+						<input type="text" id="sign-label" readonly style="border:none;">
+					</p>
+					<div id="intensity-sign" style="margin: 0 5%"></div>
+				</li>
+			</ul>
+		</div>
+		<script src="../src/dependencies/stats.min.js"></script>
+		<script>
+			var stats = new Stats();
+			document.body.appendChild( stats.dom );
+			stats.dom.style.right = "20%";
+			stats.dom.style.left = "";
+
+			function loop() {
+				stats.update();
+				requestAnimationFrame( loop );
+			}
+
+			requestAnimationFrame( loop );
+		</script>
+		<script src="../src/dependencies/dat.gui.min.js"></script>
+		<script src="../dist/network.bundle.js"></script>
+		<script src="./combinationtest.js"></script>
+	</body>
+</html>

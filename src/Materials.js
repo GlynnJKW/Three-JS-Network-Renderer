@@ -1,4 +1,4 @@
-import { Sphere, Line, PickingSphere } from './shaders';
+import { Sphere, Line } from './shaders';
 import { ShaderMaterial, Vector2, Vector3, DoubleSide, VertexColors } from 'three';
 
 const sphereMaterial = new ShaderMaterial(
@@ -9,7 +9,15 @@ const sphereMaterial = new ShaderMaterial(
         "vertexColors": VertexColors,
         "uniforms": {
             "screen": {value: new Vector2(1920, 1080)},
-            "radius": {value: 100}
+            "radius": {value: 100},
+            "near": {value: 0.1},
+            "far": {value: 1000}
+        },
+        "extensions": {
+            fragDepth: true
+        },
+        "defines": {
+            FAKE_DEPTH: true,
         }
     }
 );
@@ -19,27 +27,21 @@ const lineMaterial = new ShaderMaterial(
         "vertexShader": Line.vertex,
         "fragmentShader": Line.fragment,
         "side": DoubleSide,
-        "transparent": true,
-        "uniforms": {
-            "screen": {value: new Vector2(1920, 1080)},
-            "color0": {value: new Vector3(1, 0.65, 0)},
-            "color1": {value: new Vector3(0,0,1)},
-            "scale": {value: 0.1}
-        }
-    }
-);
-
-const pickingSphereMaterial = new ShaderMaterial(
-    {
-        "vertexShader": PickingSphere.vertex,
-        "fragmentShader": PickingSphere.fragment,
-        "side": DoubleSide,
         "vertexColors": VertexColors,
         "uniforms": {
             "screen": {value: new Vector2(1920, 1080)},
-            "radius": {value: 100}
+            "scale": {value: 0.1},
+            "near": {value: 0.1},
+            "far": {value: 1000}
+        },
+        "extensions": {
+            fragDepth: true
+        },
+        "defines": {
+            FAKE_DEPTH: true,
+            CLIP_SPACE: false
         }
     }
 );
 
-export { sphereMaterial, lineMaterial, pickingSphereMaterial }
+export { sphereMaterial, lineMaterial }

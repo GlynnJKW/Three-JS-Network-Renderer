@@ -1,0 +1,74 @@
+body {
+    display: flex;
+    margin: 0;
+}
+
+p {
+    margin-block-start: 0;
+    margin-block-end: 0;
+    margin-inline-start: 0;
+    margin-inline-end: 0;
+}
+
+canvas { 
+    width: 100%; 
+    height: 100% 
+}
+
+#canvas {
+    width: 80%;
+    height: 100%;
+}
+
+#options {
+    width: 20%;
+    text-align: center
+}
+
+#options ul {
+    list-style-type: none;
+    margin-block-start: 0;
+    margin-block-end: 0;
+    margin-inline-start: 0;
+    margin-inline-end: 0;
+    padding-inline-start: 0;
+}
+
+#options li {
+    padding: 0.5em 0;
+}
+
+#options .bool {
+    background-color: red;
+}
+
+#options .bool:not(:last-child){
+    border-bottom: 1px solid black
+}
+
+#options .bool:hover {
+    background-color: darkred;
+}
+
+#options ul .bool.selected {
+    background-color: green;
+}
+
+#options ul .bool.selected:hover {
+    background-color: darkgreen;
+}
+
+#options .bool:after {
+    content: 'DISABLED';
+}
+#options .bool.selected:after {
+    content: 'ENABLED';
+}
+
+div.dg { 
+    font-size: 16px; 
+}
+
+div.dg.main.a {
+    float:left;
+}

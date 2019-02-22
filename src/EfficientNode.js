@@ -24,6 +24,7 @@ export default class EfficientNode {
             this.velocity = new Vec3(0,0,0);
         }
         this.edges = [];
+        this.parentEdges = [];
         this.color = options.color ? options.color : new Vec3(1,1,1);
         this.gnid = 0; //graph node id number
     }

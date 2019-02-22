@@ -1,19 +1,29 @@
+//#region setup
+let displayEdges = true;
+let displayNodes = true;
 const scene = new THREE.Scene();
 const renderer = new THREE.WebGLRenderer();
-let camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-renderer.setSize(window.innerWidth, window.innerHeight);
-Network.Materials.sphereMaterial.uniforms.screen.value.set(window.innerWidth, window.innerHeight);
-window.globalCamera = camera;
-document.body.appendChild(renderer.domElement);
 
+const cv = document.getElementById('canvas')
+let camera = new THREE.PerspectiveCamera( 75, cv.clientWidth / window.innerHeight, 0.1, 1000 );
+cv.appendChild(renderer.domElement);
+//Done twice to prevent mismatch
+renderer.setSize(cv.clientWidth, window.innerHeight);
+renderer.setSize(cv.clientWidth, window.innerHeight);
 
-window["Nodes to add"] = 100000;
-
+window.addEventListener('resize', () => {
+    renderer.setSize(cv.clientWidth, window.innerHeight);
+    camera.aspect = cv.clientWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    Network.Materials.sphereMaterial.uniforms.screen.value.set(cv.clientWidth, window.innerHeight);
+    Network.Materials.lineMaterial.uniforms.screen.value.set(cv.clientWidth, window.innerHeight);
+    pickingTexture = new THREE.WebGLRenderTarget(renderer.getSize().width, renderer.getSize().height);
+});
+Network.Materials.sphereMaterial.uniforms.screen.value.set(cv.clientWidth, window.innerHeight);
+Network.Materials.lineMaterial.uniforms.screen.value.set(cv.clientWidth, window.innerHeight);
 
 let len = 100000;
 let graph = new Network.EfficientGraph();
-
-
 
 graph.addNode({name: `n0`, position: new Network.Vec3(0,0,0), edges: []});
 for(let i = 1; i < len; ++i){
@@ -21,12 +31,6 @@ for(let i = 1; i < len; ++i){
     graph.addNode(node);
     graph.addEdge(`n${i-1}`, `n${i}`);
 }
-
-// for(let i = 0; i < len/2; ++i){
-//     let a = Math.floor(Math.random() * len);
-//     let b = Math.floor(Math.random() * len);
-//     graph.addEdge(`n${a}`, `n${b}`, Math.random() * len/10 + 2);
-// }
 
 for(let e = 0; e < graph.edges.length; ++e){
     let intensity = (Math.random());
@@ -40,8 +44,14 @@ for(let n = 0; n < graph.nodes.length; ++n){
 }
 
 graph.AddFidget();
-// graph.setEdgeGeom();
+graph.setEdgeGeom();
 graph.setNodeGeom();
+if(!displayEdges){
+    graph.remove(graph.edgeObject.mesh);
+}
+if(!displayNodes){
+    graph.remove(graph.nodesObject.mesh);
+}
 scene.add(graph);
 
 camera.position.z = 50;
@@ -49,10 +59,14 @@ camera.position.z = 50;
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.screenSpacePanning = true;
 
+//#endregion
 
+//#region GUI
+window["Nodes to add"] = 100000;
 window["Add nodes"] = function(){
     addmore(window["Nodes to add"]);
 }
+
 
 function addmore(num){
     for(let i = 0; i < num; ++i){
@@ -70,9 +84,14 @@ function addmore(num){
     }
     len += num;
     graph.AddFidget();
-    // graph.updateEdgeGeom();
+    graph.setEdgeGeom();
     graph.setNodeGeom();
-    // graph.updateNodeGeom();
+    if(!displayEdges){
+        graph.remove(graph.edgeObject.mesh);
+    }
+    if(!displayNodes){
+        graph.remove(graph.nodesObject.mesh);
+    }        
     return len;
 }
 
@@ -83,6 +102,7 @@ GUI.width = window.innerWidth / 4;
 let GUIOptions = [];
 GUIOptions.push(GUI.add(window, 'Nodes to add'));
 GUIOptions.push(GUI.add(window, 'Add nodes'));
+//#endregion
 
 
 function animate(){
@@ -92,3 +112,78 @@ function animate(){
     renderer.render(scene, camera);
 }
 animate();
+
+
+//#region Material modification
+
+document.getElementById("LINE_CLIP_SPACE").addEventListener('click', () => {
+    let element = document.getElementById("LINE_CLIP_SPACE");
+    let active = element.classList.contains('selected');
+    if(active){
+        element.classList.remove('selected');
+        Network.Materials.lineMaterial.defines.CLIP_SPACE = false;
+    }
+    else{
+        element.classList.add('selected');
+        Network.Materials.lineMaterial.defines.CLIP_SPACE = true;
+    }
+    graph.edgeObject.material.needsUpdate = true;
+});
+
+document.getElementById("LINE_FAKE_DEPTH").addEventListener('click', () => {
+    let element = document.getElementById("LINE_FAKE_DEPTH");
+    let active = element.classList.contains('selected');
+    if(active){
+        element.classList.remove('selected');
+        Network.Materials.lineMaterial.defines.FAKE_DEPTH = false;
+    }
+    else{
+        element.classList.add('selected');
+        Network.Materials.lineMaterial.defines.FAKE_DEPTH = true;
+    }
+    graph.edgeObject.material.needsUpdate = true;
+});
+
+document.getElementById("NODE_FAKE_DEPTH").addEventListener('click', () => {
+    let element = document.getElementById("NODE_FAKE_DEPTH");
+    let active = element.classList.contains('selected');
+    if(active){
+        element.classList.remove('selected');
+        Network.Materials.sphereMaterial.defines.FAKE_DEPTH = false;
+    }
+    else{
+        element.classList.add('selected');
+        Network.Materials.sphereMaterial.defines.FAKE_DEPTH = true;
+    }
+    graph.nodesObject.material.needsUpdate = true;
+});
+
+document.getElementById("DISPLAY_NODES").addEventListener('click', () => {
+    let element = document.getElementById("DISPLAY_NODES");
+    let active = element.classList.contains('selected');
+    if(active){
+        graph.remove(graph.nodesObject.mesh);
+        element.classList.remove('selected');
+    }
+    else{
+        element.classList.add('selected');
+        graph.add(graph.nodesObject.mesh);
+    }
+    displayNodes = !active;
+});
+
+document.getElementById("DISPLAY_EDGES").addEventListener('click', () => {
+    let element = document.getElementById("DISPLAY_EDGES");
+    let active = element.classList.contains('selected');
+    if(active){
+        graph.remove(graph.edgeObject.mesh);
+        element.classList.remove('selected');
+    }
+    else{
+        element.classList.add('selected');
+        graph.add(graph.edgeObject.mesh);
+    }
+    displayNodes = !active;
+});
+
+//#endregion

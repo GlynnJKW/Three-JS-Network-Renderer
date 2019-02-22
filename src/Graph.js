@@ -89,6 +89,9 @@ export default class Graph extends THREE.Object3D {
         if(!this.directed){
             target.edges.push(edge);
         }
+        else{
+            target.parentEdges.push(edge);
+        }
 
         edge.index = this.edges.length;
         this.edges.push(edge);

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8>
+		<title>Stress test</title>
+		<link rel="stylesheet" href="../css/stresstest.css">
+	</head>
+	<body>
+		<div id="canvas"></div>
+		<div id="options">
+			<h2>Options</h1>
+			<ul>
+				<li id="LINE_CLIP_SPACE">Line shader: screen space - </li>
+				<li id="LINE_FAKE_DEPTH" class="selected">Line shader: fake depth - </li>
+				<li id="NODE_FAKE_DEPTH" class="selected">Node shader: fake depth - </li>
+				<li id="DISPLAY_NODES" class="selected">Display nodes - </li>
+				<li id="DISPLAY_EDGES" class="selected">Display edges - </li>
+			</ul>
+		</div>
+		<script src="../src/dependencies/stats.min.js"></script>
+		<script>
+			var stats = new Stats();
+			document.body.appendChild( stats.dom );
+			stats.dom.style.right = "20%";
+			stats.dom.style.left = "";
+
+			function loop() {
+				stats.update();
+				requestAnimationFrame( loop );
+			}
+
+			requestAnimationFrame( loop );
+		</script>
+        <script src="../src/dependencies/jquery.min.js"></script>
+		<script src="../src/dependencies/dat.gui.min.js"></script>
+		<script src="../dist/network.bundle.js"></script>
+		<script src="./stresstest.js"></script>
+	</body>
+</html>
