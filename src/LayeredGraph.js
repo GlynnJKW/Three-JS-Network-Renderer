@@ -10,10 +10,10 @@ export default class LayeredGraph extends PickableGraph{
         this.layout = [];
         this.nodesPerLayer = nodesPerLayer;
         this.numLayers = numLayers;
-        if(createOnStartup){
-            for(let i = 0; i < numLayers; ++i){
-                this.layout.push([]);
-    
+        for(let i = 0; i < numLayers; ++i){
+            this.layout.push([]);
+
+            if(createOnStartup){
                 for(let j = 0; j < nodesPerLayer; ++j){
                     let node = new EfficientNode({name: `l${i}n${j}`, position: new Vec3(i, j, 0)});
                     this.addNode(node, i, j);
@@ -22,11 +22,21 @@ export default class LayeredGraph extends PickableGraph{
         }
     }
 
+    /**
+     * Adds node to graph in the given layer and position
+     * @param {EfficientNode} node 
+     * @param {number} layer 
+     * @param {number} position 
+     */
     addNode(node, layer, position){
         this.layout[layer][position] = node;
         super.addNode(node);
     }
 
+    /**
+     * One-sided crossing minimization
+     * @param {number} [num=100] the number of times to iterate the minimization function 
+     */
     oscm(num = 100){
         if(num > 1){
             this.oscm(num - 1);
@@ -35,6 +45,9 @@ export default class LayeredGraph extends PickableGraph{
         this.uncross();
     }
 
+    /**
+     * Attempts to minimize crossing by using the midpoint heuristic
+     */
     uncross(){
         let newlayout = [];
         newlayout[this.numLayers - 1] = this.layout[this.numLayers - 1]
@@ -46,7 +59,6 @@ export default class LayeredGraph extends PickableGraph{
                 let oldnode = this.layout[layer][n];
                 if(!oldnode.edges.length){
                     unconnected.push(oldnode);
-                    // layerlayout[layerlayout.length >= this.nodesPerLayer ? layerlayout.length : this.nodesPerLayer] = oldnode;
                 }
                 else if(oldnode.edges.length == 1){
                     this._findSlot(oldnode, layerlayout, oldnode.edges[0].target.position.y);
@@ -70,6 +82,9 @@ export default class LayeredGraph extends PickableGraph{
         this.layout = newlayout;
     }
 
+    /**
+     * Attempts to minimize crossing by using the midpoint heuristic
+     */
     uncrossReverse(){
         let newlayout = [];
         newlayout[0] = this.layout[0];
@@ -86,7 +101,6 @@ export default class LayeredGraph extends PickableGraph{
                 let connected = layeredges.filter(e => e.target == oldnode);
                 if(!connected.length){
                     unconnected.push(oldnode);
-                    // layerlayout[layerlayout.length >= this.nodesPerLayer ? layerlayout.length : this.nodesPerLayer] = oldnode;
                 }
                 else if(connected.length == 1){
                     this._findSlot(oldnode, layerlayout, connected[0].source.position.y);
@@ -110,6 +124,11 @@ export default class LayeredGraph extends PickableGraph{
         this.layout = newlayout;
     }
 
+    /**
+     * @param {EfficientNode} node 
+     * @param {Array<EfficientNode>} layout 
+     * @param {number} location 
+     */
     _findSlot(node, layout, location){
         if(location == -1){
             layout.unshift(node);

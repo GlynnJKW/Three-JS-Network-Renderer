@@ -344,6 +344,36 @@ $( function() {
     });
     $( "#sign-label" ).val("Any");
 } );
+
+$( function() {
+    $( "#node-scale" ).slider({
+        min: 10,
+        max: 1000,
+        value: 100,
+        slide: function( event, ui ) {
+            $( "#node-scale-label" ).val(`${ui.value / 1000}`);
+            graph.nodesObject.material.uniforms.radius.value = ui.value;
+            graph.updateVisDelayed(300);
+        }
+    });
+    $( "#node-scale-label" ).val("0.1");
+} );
+
+$( function() {
+    $( "#edge-scale" ).slider({
+        min: 0.01,
+        max: 1,
+        value: 0.1,
+        step: 0.01,
+        slide: function( event, ui ) {
+
+            $( "#edge-scale-label" ).val(`${ui.value}`);
+            graph.edgeObject.material.uniforms.scale.value = ui.value;
+            graph.updateVisDelayed(300);
+        }
+    });
+    $( "#edge-scale-label" ).val("0.1");
+} );
 //#endregion
 
 //#region Material modification
