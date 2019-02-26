@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8>
+		<title>Stress test</title>
+		<script src="../src/dependencies/jquery.min.js"></script>
+		<script src="../src/dependencies/dat.gui.min.js"></script>
+		<script src="../src/dependencies/stats.min.js"></script>
+	</head>
+	<body style="margin: 0">
+		<script>
+			var stats = new Stats();
+			document.body.appendChild( stats.dom );
+
+			function loop() {
+				stats.update();
+				requestAnimationFrame( loop );
+			}
+
+			requestAnimationFrame( loop );
+		</script>
+		<script src="../dist/network.bundle.js"></script>
+		<script src="./gaiatest.js"></script>
+	</body>
+</html>

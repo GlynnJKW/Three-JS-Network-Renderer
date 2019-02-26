@@ -1,5 +1,7 @@
 import Vec3 from './Vec3';
 
+
+let _id = 0;
 /**
  * @property {string} name
  * @property {Vec3} position
@@ -17,7 +19,7 @@ export default class EfficientNode {
      * @param {Vec3} [options.color]
      */
     constructor(options={}){
-        this.name = options.name ? options.name : Date.now().toFixed();
+        this.name = options.name ? options.name : _id++;
         this.position = options.position ? options.position : new Vec3(0,0,0);
         if(options.physics){
             this.forces = new Vec3(0,0,0);

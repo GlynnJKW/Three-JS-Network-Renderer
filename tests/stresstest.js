@@ -5,7 +5,7 @@ const scene = new THREE.Scene();
 const renderer = new THREE.WebGLRenderer();
 
 const cv = document.getElementById('canvas')
-let camera = new THREE.PerspectiveCamera( 75, cv.clientWidth / window.innerHeight, 0.1, 1000 );
+let camera = new THREE.PerspectiveCamera( 75, cv.clientWidth / window.innerHeight, 0.1, 1000000 );
 cv.appendChild(renderer.domElement);
 //Done twice to prevent mismatch
 renderer.setSize(cv.clientWidth, window.innerHeight);
@@ -22,10 +22,15 @@ window.addEventListener('resize', () => {
 Network.Materials.sphereMaterial.uniforms.screen.value.set(cv.clientWidth, window.innerHeight);
 Network.Materials.lineMaterial.uniforms.screen.value.set(cv.clientWidth, window.innerHeight);
 
-let len = 100000;
+let len = 1;
 let graph = new Network.EfficientGraph();
+graph.nodeVisFunction = function(node){
+    return {color: node.color, width: 100}
+}
+scene.add(new THREE.Mesh(new THREE.CubeGeometry(100,100,100), new THREE.MeshBasicMaterial()));
+scene.add(new THREE.GridHelper(10));
 
-graph.addNode({name: `n0`, position: new Network.Vec3(0,0,0), edges: []});
+graph.addNode({name: `n0`, position: new Network.Vec3(0,0,100), edges: []});
 for(let i = 1; i < len; ++i){
     let node = new Network.EfficientNode({name: `n${i}`, position: new Network.Vec3(0,0,0)});
     graph.addNode(node);
@@ -43,7 +48,7 @@ for(let n = 0; n < graph.nodes.length; ++n){
     graph.nodes[n].color = col;
 }
 
-graph.AddFidget();
+// graph.AddFidget();
 graph.setEdgeGeom();
 graph.setNodeGeom();
 if(!displayEdges){
