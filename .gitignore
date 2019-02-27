@@ -1,3 +1,7 @@
 # Dependency directories
+<<<<<<< HEAD
 node_modules/
 data/
+=======
+node_modules/
+>>>>>>> 7f3dc12d4437749b57dac1f1c44350a9d686daa8

@@ -25,7 +25,7 @@ Network.Materials.lineMaterial.uniforms.screen.value.set(window.innerWidth, wind
 let graph = new Network.EfficientGraph();
 $.ajax({
     dataType: "json",
-    url: "../data/brightest1M.json",
+    url: "../data/closest100000.json",
 }).done((stars) => {
     // console.log(JSON.stringify(stars));
     for(let i = 0, len = stars.length; i < len; ++i){
@@ -54,9 +54,7 @@ graph.nodeVisFunction = function(node){
     let l = 1; // Math.sqrt(node.lum_val) / 10;
     let c = new Network.Vec3(l, l, l);
     let appmag = parseFloat(node.phot_g_mean_mag);
-    // console.log(appmag);
     let absmag = appmag + 5 * (Math.log10(node.parallax / 1000 + 1));
-    // console.log(absmag);
     let magrat = Math.pow(100, (4.83 - absmag)/5.0); // 4.83 is approx abs magnitude of sun
     return { color: c, width: sunBrightness * magrat }
 }
@@ -67,9 +65,6 @@ const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.screenSpacePanning = true;
 
 //#endregion
-
-//#rendering
-
 
 function animate(){
     requestAnimationFrame(animate);
