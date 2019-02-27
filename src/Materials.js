@@ -1,24 +1,13 @@
-<<<<<<< HEAD
 import { Node, Line } from './shaders';
-=======
-import { Sphere, Line } from './shaders';
->>>>>>> 7f3dc12d4437749b57dac1f1c44350a9d686daa8
 import { ShaderMaterial, Vector2, Vector3, DoubleSide, VertexColors } from 'three';
 
 const sphereMaterial = new ShaderMaterial(
     {
-<<<<<<< HEAD
         "vertexShader": Node.vertex,
         "fragmentShader": Node.fragment,
         "side": DoubleSide,
         "vertexColors": VertexColors,
         "transparent": true,
-=======
-        "vertexShader": Sphere.vertex,
-        "fragmentShader": Sphere.fragment,
-        "side": DoubleSide,
-        "vertexColors": VertexColors,
->>>>>>> 7f3dc12d4437749b57dac1f1c44350a9d686daa8
         "uniforms": {
             "screen": {value: new Vector2(1920, 1080)},
             "radius": {value: 1},
@@ -30,10 +19,7 @@ const sphereMaterial = new ShaderMaterial(
         },
         "defines": {
             FAKE_DEPTH: true,
-<<<<<<< HEAD
             SPHERE: true
-=======
->>>>>>> 7f3dc12d4437749b57dac1f1c44350a9d686daa8
         }
     }
 );
