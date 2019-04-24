@@ -66,7 +66,7 @@ const fragment =
             #ifdef SELECTION_BUFFER
                 gl_FragColor = vec4(test.rgb, 1);
             #else
-                gl_FragColor = vec4(test.rgb * pow((1.0 - rad), 0.5), 1);
+                gl_FragColor = vec4(test.rgb , 1);
             #endif
 
             #ifdef FAKE_DEPTH

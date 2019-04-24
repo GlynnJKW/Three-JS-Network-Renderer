@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8>
+		<title>Stress test</title>
+		<link rel="stylesheet" href="../css/stresstest.css">
+	</head>
+	<body>
+		<canvas id="canvas"></canvas>
+		<script src="../src/dependencies/stats.min.js"></script>
+		<script>
+			var stats = new Stats();
+			document.body.appendChild( stats.dom );
+			stats.dom.style.right = "20%";
+			stats.dom.style.left = "";
+
+			function loop() {
+				stats.update();
+				requestAnimationFrame( loop );
+			}
+
+			requestAnimationFrame( loop );
+		</script>
+        <script src="../src/dependencies/jquery.min.js"></script>
+		<script src="../src/dependencies/dat.gui.min.js"></script>
+        <script src="../dist/network.bundle.js"></script>
+
+        <script>
+
+//Paper: http://reality.cs.ucl.ac.uk/projects/quadrics/pbg06.pdf
+//Shaders adapted from: https://github.com/ssloy/glsltuto/tree/b58de5f79de31ff0522ddd81eaead4a94f8595b3/shaders
+            const vert = 
+`#version 300 es
+precision highp float;
+
+uniform vec4 viewport;
+// uniform mat4 VInverse;
+uniform mat4 mvpi;
+in float R;
+
+out vec3 col;
+out highp mat4 VPMTInverse;
+
+void main() {
+    col = color;
+    
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+
+    mat4 T = mat4(
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            position.x/R, position.y/R, position.z/R, 1.0/R);
+
+    mat4 PMTt = transpose(projectionMatrix * modelViewMatrix * T);
+
+    vec4 r1 = PMTt[0];
+    vec4 r2 = PMTt[1];
+    vec4 r4 = PMTt[3];
+    float r1Dr4T = dot(r1.xyz,r4.xyz)-r1.w*r4.w;
+    float r1Dr1T = dot(r1.xyz,r1.xyz)-r1.w*r1.w;
+    float r4Dr4T = dot(r4.xyz,r4.xyz)-r4.w*r4.w;
+    float r2Dr2T = dot(r2.xyz,r2.xyz)-r2.w*r2.w;
+    float r2Dr4T = dot(r2.xyz,r4.xyz)-r2.w*r4.w;
+
+    gl_Position = vec4(-r1Dr4T, -r2Dr4T, gl_Position.z/gl_Position.w*(-r4Dr4T), -r4Dr4T);
+
+
+    float discriminant_x = r1Dr4T*r1Dr4T-r4Dr4T*r1Dr1T;
+    float discriminant_y = r2Dr4T*r2Dr4T-r4Dr4T*r2Dr2T;
+    float screen = max(float(viewport.z), float(viewport.w));
+
+    gl_PointSize = sqrt(max(discriminant_x, discriminant_y))*screen/(-r4Dr4T);
+
+
+    // prepare varyings    
+    mat4 TInverse = mat4(
+            1.0,          0.0,          0.0,         0.0,
+            0.0,          1.0,          0.0,         0.0,
+            0.0,          0.0,          1.0,         0.0,
+            -position.x, -position.y, -position.z, R);
+    mat4 VInverse = mat4( // TODO: move this one to CPU
+            2.0/viewport.z, 0.0, 0.0, 0.0,
+            0.0, 2.0/viewport.w, 0.0, 0.0,
+            0.0, 0.0,                   2.0/gl_DepthRange.diff, 0.0,
+            -(viewport.z+2.0*viewport.x)/(viewport.z), -(viewport.w+2.0*viewport.y)/(viewport.w), -(gl_DepthRange.near+gl_DepthRange.far)/gl_DepthRange.diff, 1.0);
+    VPMTInverse = TInverse * mvpi * VInverse;
+}
+`;
+
+            const frag = 
+`#version 300 es
+precision highp float;
+
+uniform vec4 viewport;
+
+in highp mat4 VPMTInverse;
+in highp mat4 VPInverse;
+in highp vec3 centernormclip;
+in vec3 col;
+
+out vec4 outcolor;
+
+void main(void) {
+    outcolor = vec4(col, 1.0);
+
+    vec4 c3 = VPMTInverse[2];
+    vec4 xpPrime = VPMTInverse*vec4(gl_FragCoord.x, gl_FragCoord.y, 0.0, 1.0);
+
+    float c3TDc3 = dot(c3.xyz, c3.xyz)-c3.w*c3.w;
+    float xpPrimeTDc3 = dot(xpPrime.xyz, c3.xyz)-xpPrime.w*c3.w;
+    float xpPrimeTDxpPrime = dot(xpPrime.xyz, xpPrime.xyz)-xpPrime.w*xpPrime.w;
+
+    float square = xpPrimeTDc3*xpPrimeTDc3 - c3TDc3*xpPrimeTDxpPrime;
+
+    if (square<0.0) {
+        discard;
+    } else {
+        float z = ((-xpPrimeTDc3-sqrt(square))/c3TDc3);
+        gl_FragDepth = z;
+
+        outcolor = vec4(col, 1.0);
+    }
+}
+`;
+
+
+
+
+
+
+
+
+
+
+
+            const cv = document.getElementById('canvas')
+            const context = cv.getContext('webgl2');
+            const scene = new THREE.Scene();
+            const renderer = new THREE.WebGLRenderer({canvas: cv, context: context});
+            const NEAR = 10;
+            const FAR = 1000;
+            const DIFF = FAR - NEAR;
+
+            let camera = new THREE.PerspectiveCamera( 75, cv.clientWidth / window.innerHeight, NEAR, FAR );
+            // cv.appendChild(renderer.domElement);
+            //Done twice to prevent mismatch
+            renderer.setSize(cv.clientWidth, window.innerHeight);
+            renderer.setSize(cv.clientWidth, window.innerHeight);
+
+            camera.position.z = 50;
+
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.screenSpacePanning = true;
+
+            let starsGeom = new THREE.BufferGeometry();
+            let vertices = [];
+            let colors = [];
+            let radius = [];
+
+            for(let i = 0; i < 1000; ++i){
+                vertices.push(THREE.Math.randFloatSpread(100));
+                vertices.push(THREE.Math.randFloatSpread(100));
+                vertices.push(THREE.Math.randFloatSpread(100));
+                
+                colors.push(THREE.Math.randFloat(0,1));
+                colors.push(THREE.Math.randFloat(0,1));
+                colors.push(THREE.Math.randFloat(0,1));
+
+                radius.push(THREE.Math.randFloat(10.0,10.0));
+            }
+
+            starsGeom.addAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            starsGeom.addAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            starsGeom.addAttribute('R', new THREE.Float32BufferAttribute(radius, 1));
+
+            let starsMat = new THREE.ShaderMaterial({
+                uniforms: {
+                    viewport: { value: renderer.getCurrentViewport() },
+                    mvpi: { value: camera.projectionMatrixInverse },
+                    // VInverse: { value: new THREE.Matrix4() }
+                },
+
+                vertexShader: vert,
+                fragmentShader: frag,
+                vertexColors: THREE.VertexColors
+            });
+
+            let starField = new THREE.Points(starsGeom, starsMat);
+
+            function updateUniforms(){
+                let viewport = renderer.getCurrentViewport();
+                starsMat.uniforms.viewport.value = viewport;
+
+                let mvpi = new THREE.Matrix4();
+                mvpi.getInverse(starField.matrixWorld);
+                mvpi.multiply(camera.matrixWorld);
+                mvpi.multiply(camera.projectionMatrixInverse);
+                starsMat.uniforms.mvpi.value = mvpi;
+
+                // let VInverse = new THREE.Matrix4();
+                // VInverse.set(2.0/viewport.z,    0.0,            0.0,        -(viewport.z + 2.0 * viewport.x)/viewport.z,
+                //              0.0,               2.0/viewport.w, 0.0,        -(viewport.w + 2.0 * viewport.y)/viewport.w, 
+                //              0.0,               0.0,            2.0 / DIFF, -(NEAR + FAR)/DIFF, 
+                //              0.0,               0.0,            0.0,        1.0);
+                // starsMat.uniforms.VInverse.value = VInverse;
+            }
+
+
+
+            scene.add(starField);
+            function animate(){
+                requestAnimationFrame(animate);
+                
+                controls.update();
+                camera.updateProjectionMatrix();
+                updateUniforms();
+                renderer.render(scene, camera);
+            }
+            animate();
+        </script>
+    </body>
+</html>

@@ -14,6 +14,7 @@ const renderer = new THREE.WebGLRenderer({
 
 const cv = document.getElementById('canvas')
 let camera = new THREE.PerspectiveCamera( 75, cv.clientWidth / window.innerHeight, 0.1, 1000 );
+// let camera = new THREE.OrthographicCamera( -cv.clientWidth/2, cv.clientWidth/2, window.innerHeight/2, -window.innerHeight/2 );
 cv.appendChild(renderer.domElement);
 //Done twice to prevent mismatch
 renderer.setSize(cv.clientWidth, window.innerHeight);
@@ -22,6 +23,10 @@ renderer.setSize(cv.clientWidth, window.innerHeight);
 window.addEventListener('resize', () => {
     renderer.setSize(cv.clientWidth, window.innerHeight);
     camera.aspect = cv.clientWidth / window.innerHeight;
+    // camera.left = -cv.clientWidth/2;
+    // camera.right = cv.clientWidth/2;
+    // camera.top = window.innerHeight/2;
+    // camera.bottom = -window.innerHeight/2;
     camera.updateProjectionMatrix();
     Network.Materials.sphereMaterial.uniforms.screen.value.set(cv.clientWidth, window.innerHeight);
     Network.Materials.lineMaterial.uniforms.screen.value.set(cv.clientWidth, window.innerHeight);
@@ -347,16 +352,17 @@ $( function() {
 
 $( function() {
     $( "#node-scale" ).slider({
-        min: 10,
-        max: 1000,
-        value: 100,
+        min: 0.1,
+        max: 10,
+        value: 1.0,
+        step: 0.1,
         slide: function( event, ui ) {
-            $( "#node-scale-label" ).val(`${ui.value / 1000}`);
+            $( "#node-scale-label" ).val(`${ui.value}`);
             graph.nodesObject.material.uniforms.radius.value = ui.value;
             graph.updateVisDelayed(300);
         }
     });
-    $( "#node-scale-label" ).val("0.1");
+    $( "#node-scale-label" ).val("1.0");
 } );
 
 $( function() {
