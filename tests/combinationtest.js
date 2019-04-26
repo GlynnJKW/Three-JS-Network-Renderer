@@ -347,16 +347,17 @@ $( function() {
 
 $( function() {
     $( "#node-scale" ).slider({
-        min: 10,
-        max: 1000,
-        value: 100,
+        min: 0.1,
+        max: 10,
+        value: 1,
+        step: 0.01,
         slide: function( event, ui ) {
-            $( "#node-scale-label" ).val(`${ui.value / 1000}`);
+            $( "#node-scale-label" ).val(`${ui.value}`);
             graph.nodesObject.material.uniforms.radius.value = ui.value;
             graph.updateVisDelayed(300);
         }
     });
-    $( "#node-scale-label" ).val("0.1");
+    $( "#node-scale-label" ).val("1");
 } );
 
 $( function() {
@@ -364,7 +365,7 @@ $( function() {
         min: 0.01,
         max: 1,
         value: 0.1,
-        step: 0.01,
+        step: 0.001,
         slide: function( event, ui ) {
 
             $( "#edge-scale-label" ).val(`${ui.value}`);

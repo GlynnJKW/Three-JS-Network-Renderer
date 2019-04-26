@@ -1,22 +1,27 @@
 const vertex = 
     `
+    attribute float width;
+
     varying vec2 fraguv;
     varying vec4 test;
     varying float scale;
+    varying float isDisplayed;
+
 
     uniform vec2 screen;
     uniform float radius;
     uniform float near;
     uniform float far;
 
-    attribute float width;
-    varying float isDisplayed;
-
     void main(){
         isDisplayed = width;
+        scale = radius * 0.5 * width;
         if(width != 0.0){
             vec4 mvPos = modelViewMatrix * vec4( position, 1.0 );
-            scale = radius * 0.5 * width;
+            #ifdef STAR
+                float camDist = length(mvPos.xyz);
+                //scale *= 10.0 / (camDist + 0.01);
+            #endif
             mvPos += vec4(uv.xy * scale, 0, 0);
             gl_Position = projectionMatrix * mvPos;
             fraguv = uv;
@@ -79,11 +84,15 @@ const fragment =
         #endif
 
         #ifdef STAR
-            float i = 1.0 - min(abs(fraguv.x) + abs(fraguv.y), 1.0);
-            if(i < 0.01){
+            vec2 val;
+            val.x = 1.0 / abs(fraguv.x * scale * 25.0 + 0.01);
+            val.y = 1.0 / abs(fraguv.y * scale * 25.0 + 0.01);
+            // float i = 1.0 - min(abs(fraguv.x) + abs(fraguv.y), 1.0);
+            float a = length(val) * (1.0 - length(fraguv));
+            if(a < 0.01){
                 discard;
             }
-            gl_FragColor = vec4(test.rgb, pow(i, scale * 10.0));
+            gl_FragColor = vec4(test.rgb, a);
         #endif
     }
     `;

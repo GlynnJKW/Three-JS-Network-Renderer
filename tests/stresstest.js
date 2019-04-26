@@ -1,3 +1,5 @@
+let len = 1000;
+
 //#region setup
 let displayEdges = true;
 let displayNodes = true;
@@ -22,13 +24,12 @@ window.addEventListener('resize', () => {
 Network.Materials.sphereMaterial.uniforms.screen.value.set(cv.clientWidth, window.innerHeight);
 Network.Materials.lineMaterial.uniforms.screen.value.set(cv.clientWidth, window.innerHeight);
 
-let len = 1;
 let graph = new Network.EfficientGraph();
 graph.nodeVisFunction = function(node){
-    return {color: node.color, width: 100}
+    return {color: node.color, width: 1}
 }
-scene.add(new THREE.Mesh(new THREE.CubeGeometry(100,100,100), new THREE.MeshBasicMaterial()));
-scene.add(new THREE.GridHelper(10));
+// scene.add(new THREE.Mesh(new THREE.CubeGeometry(100,100,100), new THREE.MeshBasicMaterial()));
+// scene.add(new THREE.GridHelper(10));
 
 graph.addNode({name: `n0`, position: new Network.Vec3(0,0,100), edges: []});
 for(let i = 1; i < len; ++i){
@@ -48,7 +49,7 @@ for(let n = 0; n < graph.nodes.length; ++n){
     graph.nodes[n].color = col;
 }
 
-// graph.AddFidget();
+graph.AddFidget();
 graph.setEdgeGeom();
 graph.setNodeGeom();
 if(!displayEdges){

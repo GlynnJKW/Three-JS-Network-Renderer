@@ -2,7 +2,9 @@
 let displayEdges = true;
 let displayNodes = true;
 const scene = new THREE.Scene();
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer({
+    antialias: true
+});
 
 let camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 100000 );
 Network.Materials.sphereMaterial.uniforms.far.value = 100000;
@@ -25,10 +27,13 @@ Network.Materials.lineMaterial.uniforms.screen.value.set(window.innerWidth, wind
 let graph = new Network.EfficientGraph();
 $.ajax({
     dataType: "json",
-    url: "../data/closest100000.json",
+    url: "../data/closest5M.json",
 }).done((stars) => {
     // console.log(JSON.stringify(stars));
     for(let i = 0, len = stars.length; i < len; ++i){
+        if(i % 100000 == 0){
+            console.log(i + " finished");
+        }
         let star = stars[i];
         let node = new Network.EfficientNode();
         for(let property in star){
@@ -40,23 +45,30 @@ $.ajax({
     console.log("done");
 
     graph.setNodeGeom();
-    graph.scale.set(1,1,1);
     scene.add(graph);
 
-    graph.nodesObject.material.defines.SPHERE = false;
-    graph.nodesObject.material.defines.STAR = true;
-    graph.nodesObject.material.needsUpdate = true;
-    graph.nodesObject.material.depthWrite = false;
+    // graph.nodesObject.material.defines.SPHERE = false;
+    // graph.nodesObject.material.defines.STAR = true;
+    // graph.nodesObject.material.needsUpdate = true;
+    // graph.nodesObject.material.depthWrite = false;
 });
 
-let sunBrightness = 100;
+graph.scale.set(1,1,1);
+let sunBrightness = 0.25;
 graph.nodeVisFunction = function(node){
     let l = 1; // Math.sqrt(node.lum_val) / 10;
     let c = new Network.Vec3(l, l, l);
     let appmag = parseFloat(node.phot_g_mean_mag);
-    let absmag = appmag + 5 * (Math.log10(node.parallax / 1000 + 1));
+    let parallax = 0;
+    if(node.parallax){
+        parallax = node.parallax / 1000;
+    }
+    else{
+        parallax = 1.0 / node.position.magnitude();
+    }
+    let absmag = appmag + 5 * (Math.log10(parallax + 1));
     let magrat = Math.pow(100, (4.83 - absmag)/5.0); // 4.83 is approx abs magnitude of sun
-    return { color: c, width: sunBrightness * magrat }
+    return { color: c, width: 0.1 }//sunBrightness * magrat }
 }
 
 camera.position.z = 50;
