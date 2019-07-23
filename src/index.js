@@ -3,6 +3,7 @@ import EfficientNode from './EfficientNode';
 import Graph from './Graph';
 import GraphEdge from './GraphEdge';
 import GraphNode from './GraphNode';
+import ImageSquare from './ImageSquare';
 import InputNode from './InputNode';
 import LayeredGraph from './LayeredGraph';
 import * as Materials from './Materials';
@@ -20,6 +21,7 @@ export {
     GraphEdge,
     GraphNode,
     InputNode,
+    ImageSquare,
     LayeredGraph,
     Materials,
     PhysicsGraph,

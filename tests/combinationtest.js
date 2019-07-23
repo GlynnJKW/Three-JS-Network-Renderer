@@ -49,10 +49,10 @@ let graph = new Network.LayeredGraph(layers, nodes);
 graph.directed = true;
 graph.position.set(-(layers-1)*width/2, -(nodes-1)*height/2, 0);
 graph.scale.set(width, height, 1);
-
+console.log(graph.nodes);
 let selected = new Map();
 
-//add nodes
+//add edges
 for(let layer = 0; layer < layers; ++layer){
     for(let e = 0; e < nodes * 1.5; ++e){
         let src = Math.floor(Math.random() * nodes);
