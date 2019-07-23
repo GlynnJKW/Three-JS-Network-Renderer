@@ -65,6 +65,7 @@ let graph2 = new Network.PickableGraph();
 graph2.position.copy(graph.position);
 graph2.scale.copy(graph.scale);
 graph2.rotation.copy(graph.rotation);
+graph2.nodeVisFunction = graph.nodeVisFunction;
 
 let renderGraph = graph;
 
