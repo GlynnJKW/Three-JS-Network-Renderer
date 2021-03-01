@@ -4,7 +4,7 @@
   "description": "Network Renderer written in three.js",
   "private": true,
   "dependencies": {
-    "three": "^0.100.0"
+    "three": "^0.125.0"
   },
   "devDependencies": {
     "webpack": "^4.28.4",
